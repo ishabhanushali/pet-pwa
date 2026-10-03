@@ -154,7 +154,6 @@ export async function POST(request: Request) {
       const combinedQuantity =
         currentQuantity + quantity;
 
-      // Prevent unreasonable quantities.
       if (combinedQuantity > 100) {
         return NextResponse.json(
           {
@@ -212,7 +211,12 @@ export async function POST(request: Request) {
 
     let subtotal = 0;
 
-    const orderItems = [];
+    const orderItems: Array<{
+      productId: number;
+      quantity: number;
+      price: (typeof products)[number]["price"];
+      mrp: (typeof products)[number]["mrp"];
+    }> = [];
 
     for (const product of products) {
       const quantity =
@@ -320,8 +324,7 @@ export async function POST(request: Request) {
                   mockPaymentId,
 
                 items: {
-                  create:
-                    orderItems,
+                  create: orderItems,
                 },
               },
             });

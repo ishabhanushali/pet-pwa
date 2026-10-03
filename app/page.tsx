@@ -1,4 +1,5 @@
 import Link from "next/link";
+
 import LogoutButton from "../components/LogoutButton";
 
 export default function Home() {
@@ -53,25 +54,25 @@ export default function Home() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#fafaf7] text-slate-900">
+    <main className="min-h-screen w-full max-w-full overflow-x-clip bg-[#fafaf7] text-slate-900">
       {/* ====================================== */}
       {/* NAVBAR */}
       {/* ====================================== */}
 
-      <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white/95 backdrop-blur">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4">
+      <nav className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-2 px-3 py-3 sm:px-5 sm:py-4">
           {/* LOGO */}
 
           <Link
             href="/"
-            className="flex items-center gap-2"
+            className="flex min-w-0 items-center gap-2"
           >
-            <div className="flex h-11 w-11 items-center justify-center rounded-2xl bg-orange-100 text-2xl">
+            <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-orange-100 text-xl sm:h-11 sm:w-11 sm:text-2xl">
               🐾
             </div>
 
-            <div>
-              <h1 className="text-xl font-bold">
+            <div className="min-w-0">
+              <h1 className="whitespace-nowrap text-lg font-bold sm:text-xl">
                 Pet PWA
               </h1>
 
@@ -136,72 +137,78 @@ export default function Home() {
             <LogoutButton />
           </div>
 
-          {/* MOBILE BUTTONS */}
+          {/* MOBILE NAVIGATION */}
 
-          <div className="flex items-center gap-2 md:hidden">
+          <div className="flex min-w-0 shrink-0 items-center gap-1.5 md:hidden">
             <Link
               href="/cart"
-              className="rounded-xl bg-orange-100 px-3 py-2 font-bold text-orange-700"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-lg text-orange-700"
               aria-label="Open cart"
+              title="Cart"
             >
               🛒
             </Link>
 
             <Link
               href="/profile"
-              className="rounded-xl bg-orange-500 px-3 py-2 text-sm font-bold text-white"
+              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-white"
+              aria-label="Open profile"
+              title="Profile"
             >
-              Profile
+              👤
             </Link>
 
-            <LogoutButton />
+            <div className="shrink-0">
+              <LogoutButton />
+            </div>
           </div>
         </div>
       </nav>
 
       {/* ====================================== */}
-      {/* HERO SECTION */}
+      {/* HERO */}
       {/* ====================================== */}
 
-      <section className="overflow-hidden bg-gradient-to-br from-orange-50 via-white to-yellow-50">
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-16 md:grid-cols-2 md:py-24">
+      <section className="w-full overflow-hidden bg-gradient-to-br from-orange-50 via-white to-yellow-50">
+        <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 sm:py-16 md:grid-cols-2 md:gap-12 md:py-24">
           {/* LEFT */}
 
-          <div>
-            <div className="inline-flex rounded-full bg-orange-100 px-4 py-2 text-sm font-bold text-orange-700">
+          <div className="min-w-0">
+            <div className="inline-flex max-w-full rounded-full bg-orange-100 px-4 py-2 text-sm font-bold text-orange-700">
               🐾 Everything your pet needs
             </div>
 
-            <h1 className="mt-6 text-4xl font-extrabold leading-tight sm:text-5xl lg:text-6xl">
+            <h1 className="mt-6 text-4xl font-extrabold leading-[1.08] sm:text-5xl lg:text-6xl">
               Shop. Care.
               <span className="text-orange-500">
-                {" "}Protect.
+                {" "}
+                Protect.
               </span>
             </h1>
 
-            <p className="mt-6 max-w-xl text-lg leading-8 text-gray-600">
+            <p className="mt-6 max-w-xl text-base leading-7 text-gray-600 sm:text-lg sm:leading-8">
               Shop everyday pet essentials, create your
               pet&apos;s digital identity and keep everything
               about your furry family in one simple place.
             </p>
 
-            <div className="mt-8 flex flex-col gap-3 sm:flex-row">
+            <div className="mt-8 flex w-full flex-col gap-3 sm:flex-row">
               <Link
                 href="/shop"
-                className="rounded-xl bg-orange-500 px-7 py-4 text-center font-bold text-white shadow-sm transition hover:bg-orange-600"
+                className="w-full rounded-xl bg-orange-500 px-7 py-4 text-center font-bold text-white shadow-sm transition hover:bg-orange-600 sm:w-auto"
               >
                 Shop Now →
               </Link>
 
               <Link
                 href="/pets"
-                className="rounded-xl border border-orange-200 bg-white px-7 py-4 text-center font-bold text-orange-600 transition hover:bg-orange-50"
+                className="w-full rounded-xl border border-orange-200 bg-white px-7 py-4 text-center font-bold text-orange-600 transition hover:bg-orange-50 sm:w-auto"
               >
                 🐾 Create Pet Profile
               </Link>
             </div>
 
-            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-3 text-sm font-medium text-gray-600">
+            <div className="mt-8 flex flex-wrap gap-x-5 gap-y-3 text-sm font-medium text-gray-600">
               <span>✓ Digital Pet ID</span>
               <span>✓ Paw Points</span>
               <span>✓ Easy Reorder</span>
@@ -210,10 +217,10 @@ export default function Home() {
 
           {/* RIGHT */}
 
-          <div className="relative">
-            <div className="rounded-[2rem] bg-orange-100 p-6 sm:p-10">
-              <div className="rounded-[2rem] bg-white p-8 text-center shadow-sm">
-                <div className="text-8xl sm:text-9xl">
+          <div className="relative min-w-0">
+            <div className="rounded-[2rem] bg-orange-100 p-4 sm:p-10">
+              <div className="rounded-[2rem] bg-white p-5 text-center shadow-sm sm:p-8">
+                <div className="text-7xl sm:text-9xl">
                   🐶
                 </div>
 
@@ -225,8 +232,8 @@ export default function Home() {
                   Happy pet parents.
                 </p>
 
-                <div className="mt-6 grid grid-cols-3 gap-3">
-                  <div className="rounded-2xl bg-orange-50 p-3">
+                <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
+                  <div className="min-w-0 rounded-2xl bg-orange-50 p-2 sm:p-3">
                     <div className="text-2xl">
                       🛍️
                     </div>
@@ -236,7 +243,7 @@ export default function Home() {
                     </p>
                   </div>
 
-                  <div className="rounded-2xl bg-orange-50 p-3">
+                  <div className="min-w-0 rounded-2xl bg-orange-50 p-2 sm:p-3">
                     <div className="text-2xl">
                       🪪
                     </div>
@@ -246,7 +253,7 @@ export default function Home() {
                     </p>
                   </div>
 
-                  <div className="rounded-2xl bg-orange-50 p-3">
+                  <div className="min-w-0 rounded-2xl bg-orange-50 p-2 sm:p-3">
                     <div className="text-2xl">
                       🎁
                     </div>
@@ -266,7 +273,7 @@ export default function Home() {
       {/* CATEGORIES */}
       {/* ====================================== */}
 
-      <section className="mx-auto max-w-7xl px-6 py-16">
+      <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="text-center">
           <p className="font-bold uppercase tracking-wider text-orange-600">
             Shop by category
@@ -282,12 +289,12 @@ export default function Home() {
           </p>
         </div>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid w-full gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {categories.map((category) => (
             <Link
               key={category.name}
               href="/shop"
-              className="group rounded-3xl border border-gray-200 bg-white p-6 shadow-sm transition hover:-translate-y-1 hover:border-orange-200 hover:shadow-md"
+              className="group min-w-0 rounded-3xl border border-gray-200 bg-white p-5 shadow-sm transition hover:-translate-y-1 hover:border-orange-200 hover:shadow-md sm:p-6"
             >
               <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-orange-50 text-4xl transition group-hover:bg-orange-100">
                 {category.emoji}
@@ -313,14 +320,14 @@ export default function Home() {
       {/* DIGITAL PET ID */}
       {/* ====================================== */}
 
-      <section className="bg-slate-900">
-        <div className="mx-auto grid max-w-7xl items-center gap-12 px-6 py-16 text-white md:grid-cols-2">
+      <section className="w-full bg-slate-900">
+        <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 py-12 text-white sm:px-6 sm:py-16 md:grid-cols-2 md:gap-12">
           {/* PET ID SAMPLE */}
 
-          <div>
-            <div className="mx-auto max-w-sm rounded-[2rem] bg-white p-6 text-slate-900 shadow-xl">
-              <div className="flex items-center justify-between">
-                <div>
+          <div className="min-w-0">
+            <div className="mx-auto w-full max-w-sm rounded-[2rem] bg-white p-5 text-slate-900 shadow-xl sm:p-6">
+              <div className="flex items-center justify-between gap-4">
+                <div className="min-w-0">
                   <p className="text-xs font-bold uppercase tracking-wider text-orange-500">
                     Digital Pet ID
                   </p>
@@ -330,7 +337,7 @@ export default function Home() {
                   </h3>
                 </div>
 
-                <div className="text-5xl">
+                <div className="shrink-0 text-5xl">
                   🐕
                 </div>
               </div>
@@ -346,18 +353,18 @@ export default function Home() {
               </div>
 
               <div className="mt-5 flex items-center gap-4">
-                <div className="flex h-20 w-20 items-center justify-center rounded-xl bg-slate-900 text-4xl text-white">
+                <div className="flex h-20 w-20 shrink-0 items-center justify-center rounded-xl bg-slate-900 text-4xl text-white">
                   ▦
                 </div>
 
-                <div>
+                <div className="min-w-0">
                   <p className="font-bold">
                     Scan QR
                   </p>
 
                   <p className="mt-1 text-sm text-gray-500">
-                    Quickly access the approved
-                    public pet profile.
+                    Quickly access the approved public pet
+                    profile.
                   </p>
                 </div>
               </div>
@@ -366,7 +373,7 @@ export default function Home() {
 
           {/* DESCRIPTION */}
 
-          <div>
+          <div className="min-w-0">
             <p className="font-bold uppercase tracking-wider text-orange-400">
               Pet Identity
             </p>
@@ -391,7 +398,7 @@ export default function Home() {
 
             <Link
               href="/pets"
-              className="mt-8 inline-block rounded-xl bg-orange-500 px-6 py-3 font-bold text-white transition hover:bg-orange-600"
+              className="mt-8 inline-block max-w-full rounded-xl bg-orange-500 px-6 py-3 text-center font-bold text-white transition hover:bg-orange-600"
             >
               Create Pet Profile →
             </Link>
@@ -403,7 +410,7 @@ export default function Home() {
       {/* FEATURES */}
       {/* ====================================== */}
 
-      <section className="mx-auto max-w-7xl px-6 py-16">
+      <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="text-center">
           <p className="font-bold uppercase tracking-wider text-orange-600">
             More than a pet shop
@@ -414,11 +421,11 @@ export default function Home() {
           </h2>
         </div>
 
-        <div className="mt-10 grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid w-full gap-5 sm:grid-cols-2 lg:grid-cols-4">
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="rounded-3xl border border-gray-200 bg-white p-6"
+              className="min-w-0 rounded-3xl border border-gray-200 bg-white p-5 sm:p-6"
             >
               <div className="text-4xl">
                 {feature.emoji}
@@ -440,12 +447,12 @@ export default function Home() {
       {/* QUICK ACTIONS */}
       {/* ====================================== */}
 
-      <section className="bg-white">
-        <div className="mx-auto max-w-7xl px-6 py-16">
-          <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-4">
+      <section className="w-full bg-white">
+        <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
+          <div className="grid w-full gap-5 sm:grid-cols-2 lg:grid-cols-4">
             <Link
               href="/orders"
-              className="rounded-2xl bg-blue-50 p-6 transition hover:shadow-md"
+              className="min-w-0 rounded-2xl bg-blue-50 p-5 transition hover:shadow-md sm:p-6"
             >
               <div className="text-3xl">
                 📦
@@ -462,7 +469,7 @@ export default function Home() {
 
             <Link
               href="/rewards"
-              className="rounded-2xl bg-yellow-50 p-6 transition hover:shadow-md"
+              className="min-w-0 rounded-2xl bg-yellow-50 p-5 transition hover:shadow-md sm:p-6"
             >
               <div className="text-3xl">
                 🎁
@@ -479,7 +486,7 @@ export default function Home() {
 
             <Link
               href="/reminders"
-              className="rounded-2xl bg-purple-50 p-6 transition hover:shadow-md"
+              className="min-w-0 rounded-2xl bg-purple-50 p-5 transition hover:shadow-md sm:p-6"
             >
               <div className="text-3xl">
                 ⏰
@@ -496,7 +503,7 @@ export default function Home() {
 
             <Link
               href="/support"
-              className="rounded-2xl bg-green-50 p-6 transition hover:shadow-md"
+              className="min-w-0 rounded-2xl bg-green-50 p-5 transition hover:shadow-md sm:p-6"
             >
               <div className="text-3xl">
                 💬
@@ -518,10 +525,10 @@ export default function Home() {
       {/* CUSTOMER SUPPORT */}
       {/* ====================================== */}
 
-      <section className="bg-orange-50">
-        <div className="mx-auto max-w-7xl px-6 py-14">
-          <div className="flex flex-col items-center justify-between gap-7 rounded-3xl bg-white p-8 shadow-sm md:flex-row md:p-10">
-            <div className="max-w-2xl">
+      <section className="w-full bg-orange-50">
+        <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-14">
+          <div className="flex w-full flex-col items-start justify-between gap-7 rounded-3xl bg-white p-5 shadow-sm sm:p-8 md:flex-row md:items-center md:p-10">
+            <div className="min-w-0 max-w-2xl">
               <p className="font-bold uppercase tracking-wider text-orange-600">
                 Need Help?
               </p>
@@ -539,7 +546,7 @@ export default function Home() {
 
             <Link
               href="/support"
-              className="shrink-0 rounded-xl bg-orange-500 px-7 py-4 font-bold text-white transition hover:bg-orange-600"
+              className="w-full rounded-xl bg-orange-500 px-7 py-4 text-center font-bold text-white transition hover:bg-orange-600 sm:w-auto md:shrink-0"
             >
               Contact Support →
             </Link>
@@ -551,8 +558,8 @@ export default function Home() {
       {/* FINAL CTA */}
       {/* ====================================== */}
 
-      <section className="bg-orange-500">
-        <div className="mx-auto max-w-5xl px-6 py-16 text-center text-white">
+      <section className="w-full bg-orange-500">
+        <div className="mx-auto w-full max-w-5xl px-4 py-12 text-center text-white sm:px-6 sm:py-16">
           <div className="text-5xl">
             🐾
           </div>
@@ -567,17 +574,17 @@ export default function Home() {
             one place.
           </p>
 
-          <div className="mt-8 flex flex-col justify-center gap-3 sm:flex-row">
+          <div className="mt-8 flex w-full flex-col justify-center gap-3 sm:flex-row">
             <Link
               href="/shop"
-              className="rounded-xl bg-white px-7 py-3 font-bold text-orange-600 transition hover:bg-orange-50"
+              className="w-full rounded-xl bg-white px-7 py-3 text-center font-bold text-orange-600 transition hover:bg-orange-50 sm:w-auto"
             >
               Start Shopping
             </Link>
 
             <Link
               href="/pets"
-              className="rounded-xl border border-white/40 px-7 py-3 font-bold text-white transition hover:bg-white/10"
+              className="w-full rounded-xl border border-white/40 px-7 py-3 text-center font-bold text-white transition hover:bg-white/10 sm:w-auto"
             >
               Create Pet Profile
             </Link>
@@ -589,12 +596,12 @@ export default function Home() {
       {/* FOOTER */}
       {/* ====================================== */}
 
-      <footer className="bg-slate-950 text-white">
-        <div className="mx-auto max-w-7xl px-6 py-12">
-          <div className="grid gap-10 md:grid-cols-4">
+      <footer className="w-full bg-slate-950 text-white">
+        <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-12">
+          <div className="grid w-full gap-8 sm:grid-cols-2 md:grid-cols-4 md:gap-10">
             {/* BRAND */}
 
-            <div className="md:col-span-1">
+            <div className="min-w-0">
               <div className="flex items-center gap-2">
                 <div className="text-3xl">
                   🐾
@@ -613,7 +620,7 @@ export default function Home() {
 
             {/* SHOP */}
 
-            <div>
+            <div className="min-w-0">
               <h3 className="font-bold">
                 Shop
               </h3>
@@ -644,7 +651,7 @@ export default function Home() {
 
             {/* ACCOUNT */}
 
-            <div>
+            <div className="min-w-0">
               <h3 className="font-bold">
                 My Account
               </h3>
@@ -682,7 +689,7 @@ export default function Home() {
 
             {/* HELP */}
 
-            <div>
+            <div className="min-w-0">
               <h3 className="font-bold">
                 Help
               </h3>
@@ -706,7 +713,8 @@ export default function Home() {
           </div>
 
           <div className="mt-10 border-t border-slate-800 pt-6 text-center text-sm text-slate-500">
-            © {new Date().getFullYear()} Pet PWA. All rights reserved.
+            © {new Date().getFullYear()} Pet PWA. All
+            rights reserved.
           </div>
         </div>
       </footer>
