@@ -1,0 +1,270 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../app/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model Customer {
+  id        Int      @id @default(autoincrement())
+  name      String
+  mobile    String   @unique
+  email     String?  @unique
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  addresses          Address[]
+  orders             Order[]
+  pets               Pet[]
+  rewardTransactions RewardTransaction[]
+  reminders          Reminder[]
+  sessions           CustomerSession[]
+}
+
+model CustomerSession {
+  id         Int      @id @default(autoincrement())
+  tokenHash  String   @unique
+  customerId Int
+  expiresAt  DateTime
+  createdAt  DateTime @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+
+  @@index([customerId])
+  @@index([expiresAt])
+}
+
+model Address {
+  id         Int      @id @default(autoincrement())
+  customerId Int
+  address    String
+  landmark   String?
+  city       String
+  state      String
+  pincode    String
+  isDefault  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  orders   Order[]
+}
+
+model Product {
+  id          Int      @id @default(autoincrement())
+  name        String
+  brand       String
+  category    String
+  packSize    String
+  mrp         Decimal  @db.Decimal(10, 2)
+  price       Decimal  @db.Decimal(10, 2)
+  imageUrl    String?
+  description String?
+  inStock     Boolean  @default(true)
+  stock       Int      @default(0)
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  orderItems OrderItem[]
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PACKED
+  SHIPPED
+  DELIVERED
+  CANCELLED
+}
+
+enum PaymentMethod {
+  ONLINE
+  COD
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+model Order {
+  id                      Int           @id @default(autoincrement())
+  orderNumber             String        @unique
+  customerId              Int
+  addressId               Int
+  subtotal                Decimal       @db.Decimal(10, 2)
+  deliveryCharge          Decimal       @db.Decimal(10, 2)
+  total                   Decimal       @db.Decimal(10, 2)
+  status                  OrderStatus   @default(PENDING)
+  paymentMethod           PaymentMethod
+  paymentStatus           PaymentStatus @default(PENDING)
+  paymentGatewayOrderId   String?
+  paymentGatewayPaymentId String?
+  createdAt               DateTime      @default(now())
+  updatedAt               DateTime      @updatedAt
+
+  customer Customer    @relation(fields: [customerId], references: [id])
+  address  Address     @relation(fields: [addressId], references: [id])
+  items    OrderItem[]
+}
+
+model OrderItem {
+  id        Int     @id @default(autoincrement())
+  orderId   Int
+  productId Int
+  quantity  Int
+  price     Decimal @db.Decimal(10, 2)
+  mrp       Decimal @db.Decimal(10, 2)
+
+  order   Order   @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id])
+}
+
+model Pet {
+  id          Int       @id @default(autoincrement())
+  customerId  Int
+  name        String
+  type        String
+  photoUrl    String?
+  breed       String?
+  gender      String?
+  dateOfBirth DateTime?
+  weight      Decimal?  @db.Decimal(6, 2)
+  allergies   String?
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+
+  customer  Customer   @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  petId     PetID?
+  reminders Reminder[]
+}
+
+enum PetIDStatus {
+  UNCLAIMED
+  ACTIVE
+  LOST
+  DISABLED
+}
+
+model PetID {
+  id          Int         @id @default(autoincrement())
+  petCode     String      @unique
+  petId       Int         @unique
+  qrToken     String      @unique
+  status      PetIDStatus @default(UNCLAIMED)
+  activatedAt DateTime?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  pet Pet @relation(fields: [petId], references: [id], onDelete: Cascade)
+}
+
+enum RewardTransactionType {
+  CREDIT
+  DEBIT
+}
+
+model RewardTransaction {
+  id         Int                   @id @default(autoincrement())
+  customerId Int
+  type       RewardTransactionType
+  points     Int
+  reason     String
+  adminName  String?
+  createdAt  DateTime              @default(now())
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+}
+
+model Reminder {
+  id         Int      @id @default(autoincrement())
+  customerId Int
+  petId      Int?
+  title      String
+  reminderAt DateTime
+  note       String?
+  completed  Boolean  @default(false)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  customer Customer @relation(fields: [customerId], references: [id], onDelete: Cascade)
+  pet      Pet?     @relation(fields: [petId], references: [id], onDelete: SetNull)
+
+  @@index([customerId])
+  @@index([petId])
+  @@index([reminderAt])
+}
+
+enum AdminRole {
+  ADMIN
+  SUPER_ADMIN
+}
+
+model Admin {
+  id           Int       @id @default(autoincrement())
+  name         String
+  email        String    @unique
+  passwordHash String
+  role         AdminRole @default(ADMIN)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  sessions AdminSession[]
+}
+
+model AdminSession {
+  id        Int      @id @default(autoincrement())
+  tokenHash String   @unique
+  adminId   Int
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  admin Admin @relation(fields: [adminId], references: [id], onDelete: Cascade)
+
+  @@index([adminId])
+  @@index([expiresAt])
+}
+
+model CustomerOTP {
+  id        Int      @id @default(autoincrement())
+  mobile    String
+  otpHash   String
+  expiresAt DateTime
+  attempts  Int      @default(0)
+  createdAt DateTime @default(now())
+
+  @@index([mobile])
+  @@index([expiresAt])
+}
+
+model PetActivationOTP {
+  id        Int      @id @default(autoincrement())
+  petId     Int
+  mobile    String
+  otpHash   String
+  attempts  Int      @default(0)
+  expiresAt DateTime
+  createdAt DateTime @default(now())
+
+  @@index([petId])
+  @@index([mobile])
+  @@index([expiresAt])
+}
+
+model AnalyticsEvent {
+  id         Int      @id @default(autoincrement())
+  eventName  String
+  customerId Int?
+  entityType String?
+  entityId   Int?
+  metadata   Json?
+  createdAt  DateTime @default(now())
+
+  @@index([eventName])
+  @@index([customerId])
+  @@index([createdAt])
+}
