@@ -39,6 +39,7 @@ export type CustomerOTPSumAggregateOutputType = {
 export type CustomerOTPMinAggregateOutputType = {
   id: number | null
   mobile: string | null
+  email: string | null
   otpHash: string | null
   expiresAt: Date | null
   attempts: number | null
@@ -48,6 +49,7 @@ export type CustomerOTPMinAggregateOutputType = {
 export type CustomerOTPMaxAggregateOutputType = {
   id: number | null
   mobile: string | null
+  email: string | null
   otpHash: string | null
   expiresAt: Date | null
   attempts: number | null
@@ -57,6 +59,7 @@ export type CustomerOTPMaxAggregateOutputType = {
 export type CustomerOTPCountAggregateOutputType = {
   id: number
   mobile: number
+  email: number
   otpHash: number
   expiresAt: number
   attempts: number
@@ -78,6 +81,7 @@ export type CustomerOTPSumAggregateInputType = {
 export type CustomerOTPMinAggregateInputType = {
   id?: true
   mobile?: true
+  email?: true
   otpHash?: true
   expiresAt?: true
   attempts?: true
@@ -87,6 +91,7 @@ export type CustomerOTPMinAggregateInputType = {
 export type CustomerOTPMaxAggregateInputType = {
   id?: true
   mobile?: true
+  email?: true
   otpHash?: true
   expiresAt?: true
   attempts?: true
@@ -96,6 +101,7 @@ export type CustomerOTPMaxAggregateInputType = {
 export type CustomerOTPCountAggregateInputType = {
   id?: true
   mobile?: true
+  email?: true
   otpHash?: true
   expiresAt?: true
   attempts?: true
@@ -191,7 +197,8 @@ export type CustomerOTPGroupByArgs<ExtArgs extends runtime.Types.Extensions.Inte
 
 export type CustomerOTPGroupByOutputType = {
   id: number
-  mobile: string
+  mobile: string | null
+  email: string | null
   otpHash: string
   expiresAt: Date
   attempts: number
@@ -223,7 +230,8 @@ export type CustomerOTPWhereInput = {
   OR?: Prisma.CustomerOTPWhereInput[]
   NOT?: Prisma.CustomerOTPWhereInput | Prisma.CustomerOTPWhereInput[]
   id?: Prisma.IntFilter<"CustomerOTP"> | number
-  mobile?: Prisma.StringFilter<"CustomerOTP"> | string
+  mobile?: Prisma.StringNullableFilter<"CustomerOTP"> | string | null
+  email?: Prisma.StringNullableFilter<"CustomerOTP"> | string | null
   otpHash?: Prisma.StringFilter<"CustomerOTP"> | string
   expiresAt?: Prisma.DateTimeFilter<"CustomerOTP"> | Date | string
   attempts?: Prisma.IntFilter<"CustomerOTP"> | number
@@ -232,7 +240,8 @@ export type CustomerOTPWhereInput = {
 
 export type CustomerOTPOrderByWithRelationInput = {
   id?: Prisma.SortOrder
-  mobile?: Prisma.SortOrder
+  mobile?: Prisma.SortOrderInput | Prisma.SortOrder
+  email?: Prisma.SortOrderInput | Prisma.SortOrder
   otpHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   attempts?: Prisma.SortOrder
@@ -244,7 +253,8 @@ export type CustomerOTPWhereUniqueInput = Prisma.AtLeast<{
   AND?: Prisma.CustomerOTPWhereInput | Prisma.CustomerOTPWhereInput[]
   OR?: Prisma.CustomerOTPWhereInput[]
   NOT?: Prisma.CustomerOTPWhereInput | Prisma.CustomerOTPWhereInput[]
-  mobile?: Prisma.StringFilter<"CustomerOTP"> | string
+  mobile?: Prisma.StringNullableFilter<"CustomerOTP"> | string | null
+  email?: Prisma.StringNullableFilter<"CustomerOTP"> | string | null
   otpHash?: Prisma.StringFilter<"CustomerOTP"> | string
   expiresAt?: Prisma.DateTimeFilter<"CustomerOTP"> | Date | string
   attempts?: Prisma.IntFilter<"CustomerOTP"> | number
@@ -253,7 +263,8 @@ export type CustomerOTPWhereUniqueInput = Prisma.AtLeast<{
 
 export type CustomerOTPOrderByWithAggregationInput = {
   id?: Prisma.SortOrder
-  mobile?: Prisma.SortOrder
+  mobile?: Prisma.SortOrderInput | Prisma.SortOrder
+  email?: Prisma.SortOrderInput | Prisma.SortOrder
   otpHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   attempts?: Prisma.SortOrder
@@ -270,7 +281,8 @@ export type CustomerOTPScalarWhereWithAggregatesInput = {
   OR?: Prisma.CustomerOTPScalarWhereWithAggregatesInput[]
   NOT?: Prisma.CustomerOTPScalarWhereWithAggregatesInput | Prisma.CustomerOTPScalarWhereWithAggregatesInput[]
   id?: Prisma.IntWithAggregatesFilter<"CustomerOTP"> | number
-  mobile?: Prisma.StringWithAggregatesFilter<"CustomerOTP"> | string
+  mobile?: Prisma.StringNullableWithAggregatesFilter<"CustomerOTP"> | string | null
+  email?: Prisma.StringNullableWithAggregatesFilter<"CustomerOTP"> | string | null
   otpHash?: Prisma.StringWithAggregatesFilter<"CustomerOTP"> | string
   expiresAt?: Prisma.DateTimeWithAggregatesFilter<"CustomerOTP"> | Date | string
   attempts?: Prisma.IntWithAggregatesFilter<"CustomerOTP"> | number
@@ -278,7 +290,8 @@ export type CustomerOTPScalarWhereWithAggregatesInput = {
 }
 
 export type CustomerOTPCreateInput = {
-  mobile: string
+  mobile?: string | null
+  email?: string | null
   otpHash: string
   expiresAt: Date | string
   attempts?: number
@@ -287,7 +300,8 @@ export type CustomerOTPCreateInput = {
 
 export type CustomerOTPUncheckedCreateInput = {
   id?: number
-  mobile: string
+  mobile?: string | null
+  email?: string | null
   otpHash: string
   expiresAt: Date | string
   attempts?: number
@@ -295,7 +309,8 @@ export type CustomerOTPUncheckedCreateInput = {
 }
 
 export type CustomerOTPUpdateInput = {
-  mobile?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   otpHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attempts?: Prisma.IntFieldUpdateOperationsInput | number
@@ -304,7 +319,8 @@ export type CustomerOTPUpdateInput = {
 
 export type CustomerOTPUncheckedUpdateInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  mobile?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   otpHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attempts?: Prisma.IntFieldUpdateOperationsInput | number
@@ -313,7 +329,8 @@ export type CustomerOTPUncheckedUpdateInput = {
 
 export type CustomerOTPCreateManyInput = {
   id?: number
-  mobile: string
+  mobile?: string | null
+  email?: string | null
   otpHash: string
   expiresAt: Date | string
   attempts?: number
@@ -321,7 +338,8 @@ export type CustomerOTPCreateManyInput = {
 }
 
 export type CustomerOTPUpdateManyMutationInput = {
-  mobile?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   otpHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attempts?: Prisma.IntFieldUpdateOperationsInput | number
@@ -330,7 +348,8 @@ export type CustomerOTPUpdateManyMutationInput = {
 
 export type CustomerOTPUncheckedUpdateManyInput = {
   id?: Prisma.IntFieldUpdateOperationsInput | number
-  mobile?: Prisma.StringFieldUpdateOperationsInput | string
+  mobile?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
+  email?: Prisma.NullableStringFieldUpdateOperationsInput | string | null
   otpHash?: Prisma.StringFieldUpdateOperationsInput | string
   expiresAt?: Prisma.DateTimeFieldUpdateOperationsInput | Date | string
   attempts?: Prisma.IntFieldUpdateOperationsInput | number
@@ -340,6 +359,7 @@ export type CustomerOTPUncheckedUpdateManyInput = {
 export type CustomerOTPCountOrderByAggregateInput = {
   id?: Prisma.SortOrder
   mobile?: Prisma.SortOrder
+  email?: Prisma.SortOrder
   otpHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   attempts?: Prisma.SortOrder
@@ -354,6 +374,7 @@ export type CustomerOTPAvgOrderByAggregateInput = {
 export type CustomerOTPMaxOrderByAggregateInput = {
   id?: Prisma.SortOrder
   mobile?: Prisma.SortOrder
+  email?: Prisma.SortOrder
   otpHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   attempts?: Prisma.SortOrder
@@ -363,6 +384,7 @@ export type CustomerOTPMaxOrderByAggregateInput = {
 export type CustomerOTPMinOrderByAggregateInput = {
   id?: Prisma.SortOrder
   mobile?: Prisma.SortOrder
+  email?: Prisma.SortOrder
   otpHash?: Prisma.SortOrder
   expiresAt?: Prisma.SortOrder
   attempts?: Prisma.SortOrder
@@ -379,6 +401,7 @@ export type CustomerOTPSumOrderByAggregateInput = {
 export type CustomerOTPSelect<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   mobile?: boolean
+  email?: boolean
   otpHash?: boolean
   expiresAt?: boolean
   attempts?: boolean
@@ -388,6 +411,7 @@ export type CustomerOTPSelect<ExtArgs extends runtime.Types.Extensions.InternalA
 export type CustomerOTPSelectCreateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   mobile?: boolean
+  email?: boolean
   otpHash?: boolean
   expiresAt?: boolean
   attempts?: boolean
@@ -397,6 +421,7 @@ export type CustomerOTPSelectCreateManyAndReturn<ExtArgs extends runtime.Types.E
 export type CustomerOTPSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetSelect<{
   id?: boolean
   mobile?: boolean
+  email?: boolean
   otpHash?: boolean
   expiresAt?: boolean
   attempts?: boolean
@@ -406,20 +431,22 @@ export type CustomerOTPSelectUpdateManyAndReturn<ExtArgs extends runtime.Types.E
 export type CustomerOTPSelectScalar = {
   id?: boolean
   mobile?: boolean
+  email?: boolean
   otpHash?: boolean
   expiresAt?: boolean
   attempts?: boolean
   createdAt?: boolean
 }
 
-export type CustomerOTPOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "mobile" | "otpHash" | "expiresAt" | "attempts" | "createdAt", ExtArgs["result"]["customerOTP"]>
+export type CustomerOTPOmit<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = runtime.Types.Extensions.GetOmit<"id" | "mobile" | "email" | "otpHash" | "expiresAt" | "attempts" | "createdAt", ExtArgs["result"]["customerOTP"]>
 
 export type $CustomerOTPPayload<ExtArgs extends runtime.Types.Extensions.InternalArgs = runtime.Types.Extensions.DefaultArgs> = {
   name: "CustomerOTP"
   objects: {}
   scalars: runtime.Types.Extensions.GetPayloadResult<{
     id: number
-    mobile: string
+    mobile: string | null
+    email: string | null
     otpHash: string
     expiresAt: Date
     attempts: number
@@ -849,6 +876,7 @@ export interface Prisma__CustomerOTPClient<T, Null = never, ExtArgs extends runt
 export interface CustomerOTPFieldRefs {
   readonly id: Prisma.FieldRef<"CustomerOTP", 'Int'>
   readonly mobile: Prisma.FieldRef<"CustomerOTP", 'String'>
+  readonly email: Prisma.FieldRef<"CustomerOTP", 'String'>
   readonly otpHash: Prisma.FieldRef<"CustomerOTP", 'String'>
   readonly expiresAt: Prisma.FieldRef<"CustomerOTP", 'DateTime'>
   readonly attempts: Prisma.FieldRef<"CustomerOTP", 'Int'>

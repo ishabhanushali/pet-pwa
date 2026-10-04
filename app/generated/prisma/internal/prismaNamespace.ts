@@ -1757,6 +1757,7 @@ export type AdminSessionScalarFieldEnum = (typeof AdminSessionScalarFieldEnum)[k
 export const CustomerOTPScalarFieldEnum = {
   id: 'id',
   mobile: 'mobile',
+  email: 'email',
   otpHash: 'otpHash',
   expiresAt: 'expiresAt',
   attempts: 'attempts',

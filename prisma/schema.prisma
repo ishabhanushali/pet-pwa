@@ -230,13 +230,19 @@ model AdminSession {
 }
 
 model CustomerOTP {
-  id        Int      @id @default(autoincrement())
-  mobile    String
+  id Int @id @default(autoincrement())
+
+  // Old mobile OTP rows can remain in the database.
+  // New login OTPs use email.
+  mobile String?
+  email  String?
+
   otpHash   String
   expiresAt DateTime
   attempts  Int      @default(0)
   createdAt DateTime @default(now())
 
+  @@index([email])
   @@index([mobile])
   @@index([expiresAt])
 }

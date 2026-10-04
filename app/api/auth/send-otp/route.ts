@@ -1,28 +1,61 @@
 import { NextResponse } from "next/server";
 import crypto from "crypto";
-import { prisma } from "../../../../lib/prisma";
 
-// ====================================================
-// POST - SEND CUSTOMER OTP
-// ====================================================
+import { prisma } from "../../../../lib/prisma";
+import { sendOtpEmail } from "../../../../lib/emailOtp";
+
+const EMAIL_REGEX = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+const MOBILE_REGEX = /^[6-9]\d{9}$/;
 
 export async function POST(request: Request) {
   try {
-    // ==================================================
-    // 1. READ MOBILE NUMBER
-    // ==================================================
-
     const body = await request.json();
 
-    const mobile = String(
-      body.mobile || ""
-    ).trim();
+    const name = String(body.name ?? "").trim();
+
+    const email = String(body.email ?? "")
+      .trim()
+      .toLowerCase();
+
+    const mobile = String(body.mobile ?? "").trim();
 
     // ==================================================
-    // 2. VALIDATE MOBILE NUMBER
+    // 1. VALIDATE NAME
     // ==================================================
 
-    if (!/^[6-9]\d{9}$/.test(mobile)) {
+    if (name.length < 2 || name.length > 80) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Please enter your full name.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    // ==================================================
+    // 2. VALIDATE EMAIL
+    // ==================================================
+
+    if (!EMAIL_REGEX.test(email) || email.length > 254) {
+      return NextResponse.json(
+        {
+          success: false,
+          message: "Please enter a valid email address.",
+        },
+        {
+          status: 400,
+        }
+      );
+    }
+
+    // ==================================================
+    // 3. VALIDATE MOBILE NUMBER
+    // ==================================================
+
+    if (!MOBILE_REGEX.test(mobile)) {
       return NextResponse.json(
         {
           success: false,
@@ -36,68 +69,44 @@ export async function POST(request: Request) {
     }
 
     // ==================================================
-    // 3. CHECK REQUEST COOLDOWN
-    // ==================================================
-    //
-    // A new OTP can only be requested after 60 seconds.
-    // This prevents rapid OTP generation for one number.
+    // 4. CHECK OTP COOLDOWN
     // ==================================================
 
-    const existingOtp =
-      await prisma.customerOTP.findFirst({
-        where: {
-          mobile,
-        },
+    const latestOtp = await prisma.customerOTP.findFirst({
+      where: {
+        email,
+      },
 
-        orderBy: {
-          createdAt: "desc",
-        },
-      });
+      orderBy: {
+        createdAt: "desc",
+      },
+    });
 
-    if (existingOtp) {
-      const ageInMilliseconds =
-        Date.now() -
-        existingOtp.createdAt.getTime();
+    if (latestOtp) {
+      const cooldown = 60 * 1000;
 
-      const cooldownMilliseconds =
-        60 * 1000;
+      const elapsed =
+        Date.now() - latestOtp.createdAt.getTime();
 
-      if (
-        ageInMilliseconds <
-        cooldownMilliseconds
-      ) {
-        const secondsRemaining =
-          Math.ceil(
-            (
-              cooldownMilliseconds -
-              ageInMilliseconds
-            ) / 1000
-          );
+      if (elapsed < cooldown) {
+        const seconds = Math.ceil(
+          (cooldown - elapsed) / 1000
+        );
 
         return NextResponse.json(
           {
             success: false,
-
-            message:
-              `Please wait ${secondsRemaining} second(s) before requesting another OTP.`,
-
-            retryAfter:
-              secondsRemaining,
+            message: `Please wait ${seconds} second(s) before requesting another OTP.`,
           },
           {
             status: 429,
-
-            headers: {
-              "Retry-After":
-                String(secondsRemaining),
-            },
           }
         );
       }
     }
 
     // ==================================================
-    // 4. GENERATE RANDOM 6-DIGIT OTP
+    // 5. GENERATE RANDOM 6-DIGIT OTP
     // ==================================================
 
     const otp = crypto
@@ -105,10 +114,7 @@ export async function POST(request: Request) {
       .toString();
 
     // ==================================================
-    // 5. HASH OTP
-    // ==================================================
-    //
-    // Never store the plain OTP in PostgreSQL.
+    // 6. HASH OTP
     // ==================================================
 
     const otpHash = crypto
@@ -116,15 +122,10 @@ export async function POST(request: Request) {
       .update(otp)
       .digest("hex");
 
-    // ==================================================
-    // 6. SET 5-MINUTE EXPIRY
-    // ==================================================
-
-    const expiresAt =
-      new Date(
-        Date.now() +
-          5 * 60 * 1000
-      );
+    // OTP valid for 5 minutes
+    const expiresAt = new Date(
+      Date.now() + 5 * 60 * 1000
+    );
 
     // ==================================================
     // 7. DELETE OLD OTPs
@@ -132,17 +133,17 @@ export async function POST(request: Request) {
 
     await prisma.customerOTP.deleteMany({
       where: {
-        mobile,
+        email,
       },
     });
 
     // ==================================================
-    // 8. STORE NEW OTP
+    // 8. SAVE HASHED OTP IN DATABASE
     // ==================================================
 
     await prisma.customerOTP.create({
       data: {
-        mobile,
+        email,
         otpHash,
         expiresAt,
         attempts: 0,
@@ -150,46 +151,45 @@ export async function POST(request: Request) {
     });
 
     // ==================================================
-    // 9. DEVELOPMENT MODE
-    // ==================================================
-    //
-    // For local development only, return the OTP so
-    // we can test without an SMS provider.
-    //
-    // Never return the OTP in production.
+    // 9. SEND REAL OTP EMAIL
     // ==================================================
 
-    if (
-      process.env.NODE_ENV !==
-      "production"
-    ) {
-      console.log(
-        `Development OTP for ${mobile}: ${otp}`
-      );
-
-      return NextResponse.json({
-        success: true,
-
-        message:
-          "OTP generated successfully.",
-
-        demoOtp:
-          otp,
+    try {
+      await sendOtpEmail({
+        to: email,
+        otp,
       });
+    } catch (error) {
+      console.error("Email sending failed:", error);
+
+      // Remove OTP because email was not delivered
+      await prisma.customerOTP.deleteMany({
+        where: {
+          email,
+        },
+      });
+
+      return NextResponse.json(
+        {
+          success: false,
+          message:
+            "Could not send OTP email. Please try again.",
+        },
+        {
+          status: 502,
+        }
+      );
     }
 
     // ==================================================
-    // 10. PRODUCTION
-    // ==================================================
-    //
-    // Before production launch, an SMS provider must
-    // send the generated OTP here.
+    // 10. SUCCESS
+    // IMPORTANT: Never return the OTP to the browser
     // ==================================================
 
     return NextResponse.json({
       success: true,
       message:
-        "OTP sent successfully.",
+        "OTP sent successfully. Please check your email.",
     });
   } catch (error) {
     console.error(
@@ -200,8 +200,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         success: false,
-        message:
-          "Something went wrong.",
+        message: "Something went wrong.",
       },
       {
         status: 500,
