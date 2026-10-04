@@ -1,8 +1,51 @@
 import Link from "next/link";
+import { cookies } from "next/headers";
+import crypto from "crypto";
 
 import LogoutButton from "../components/LogoutButton";
+import { prisma } from "../lib/prisma";
 
-export default function Home() {
+export default async function Home() {
+  // ==================================================
+  // CHECK CUSTOMER LOGIN SESSION
+  // ==================================================
+
+  const cookieStore = await cookies();
+  const sessionToken = cookieStore.get("customerSession")?.value;
+
+  let customer = null;
+
+  if (sessionToken) {
+    try {
+      const tokenHash = crypto
+        .createHash("sha256")
+        .update(sessionToken)
+        .digest("hex");
+
+      const session = await prisma.customerSession.findUnique({
+        where: {
+          tokenHash,
+        },
+        include: {
+          customer: true,
+        },
+      });
+
+      if (
+        session &&
+        session.expiresAt.getTime() > Date.now()
+      ) {
+        customer = session.customer;
+      }
+    } catch (error) {
+      console.error("Home session check error:", error);
+    }
+  }
+
+  // ==================================================
+  // HOME PAGE DATA
+  // ==================================================
+
   const categories = [
     {
       name: "Dog Food",
@@ -55,12 +98,14 @@ export default function Home() {
 
   return (
     <main className="min-h-screen w-full max-w-full overflow-x-clip bg-[#fafaf7] text-slate-900">
-      {/* ====================================== */}
+
+      {/* ================================================== */}
       {/* NAVBAR */}
-      {/* ====================================== */}
+      {/* ================================================== */}
 
       <nav className="sticky top-0 z-50 w-full border-b border-gray-200 bg-white/95 backdrop-blur">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-2 px-3 py-3 sm:px-5 sm:py-4">
+
           {/* LOGO */}
 
           <Link
@@ -82,7 +127,9 @@ export default function Home() {
             </div>
           </Link>
 
+          {/* ================================================== */}
           {/* DESKTOP NAVIGATION */}
+          {/* ================================================== */}
 
           <div className="hidden items-center gap-5 md:flex">
             <Link
@@ -127,19 +174,34 @@ export default function Home() {
               🛒 Cart
             </Link>
 
-            <Link
-              href="/profile"
-              className="rounded-xl bg-orange-500 px-4 py-2 font-bold text-white transition hover:bg-orange-600"
-            >
-              Profile
-            </Link>
+            {/* CUSTOMER LOGIN STATE */}
 
-            <LogoutButton />
+            {customer ? (
+              <>
+                <Link
+                  href="/profile"
+                  className="rounded-xl bg-orange-100 px-4 py-2 font-bold text-orange-700 transition hover:bg-orange-200"
+                >
+                  👤 {customer.name}
+                </Link>
+
+                <LogoutButton />
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="rounded-xl bg-orange-500 px-5 py-2 font-bold text-white transition hover:bg-orange-600"
+              >
+                Login
+              </Link>
+            )}
           </div>
 
+          {/* ================================================== */}
           {/* MOBILE NAVIGATION */}
+          {/* ================================================== */}
 
-          <div className="flex min-w-0 shrink-0 items-center gap-1.5 md:hidden">
+          <div className="flex min-w-0 shrink-0 items-center gap-2 md:hidden">
             <Link
               href="/cart"
               className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-100 text-lg text-orange-700"
@@ -149,28 +211,40 @@ export default function Home() {
               🛒
             </Link>
 
-            <Link
-              href="/profile"
-              className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-white"
-              aria-label="Open profile"
-              title="Profile"
-            >
-              👤
-            </Link>
+            {customer ? (
+              <>
+                <Link
+                  href="/profile"
+                  className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-orange-500 text-white"
+                  aria-label="Open profile"
+                  title="Profile"
+                >
+                  👤
+                </Link>
 
-            <div className="shrink-0">
-              <LogoutButton />
-            </div>
+                <div className="shrink-0">
+                  <LogoutButton />
+                </div>
+              </>
+            ) : (
+              <Link
+                href="/login"
+                className="rounded-xl bg-orange-500 px-4 py-2 font-bold text-white transition hover:bg-orange-600"
+              >
+                Login
+              </Link>
+            )}
           </div>
         </div>
       </nav>
 
-      {/* ====================================== */}
+      {/* ================================================== */}
       {/* HERO */}
-      {/* ====================================== */}
+      {/* ================================================== */}
 
       <section className="w-full overflow-hidden bg-gradient-to-br from-orange-50 via-white to-yellow-50">
         <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 py-12 sm:px-6 sm:py-16 md:grid-cols-2 md:gap-12 md:py-24">
+
           {/* LEFT */}
 
           <div className="min-w-0">
@@ -181,8 +255,7 @@ export default function Home() {
             <h1 className="mt-6 text-4xl font-extrabold leading-[1.08] sm:text-5xl lg:text-6xl">
               Shop. Care.
               <span className="text-orange-500">
-                {" "}
-                Protect.
+                {" "}Protect.
               </span>
             </h1>
 
@@ -234,30 +307,21 @@ export default function Home() {
 
                 <div className="mt-6 grid grid-cols-3 gap-2 sm:gap-3">
                   <div className="min-w-0 rounded-2xl bg-orange-50 p-2 sm:p-3">
-                    <div className="text-2xl">
-                      🛍️
-                    </div>
-
+                    <div className="text-2xl">🛍️</div>
                     <p className="mt-1 text-xs font-bold">
                       Shop
                     </p>
                   </div>
 
                   <div className="min-w-0 rounded-2xl bg-orange-50 p-2 sm:p-3">
-                    <div className="text-2xl">
-                      🪪
-                    </div>
-
+                    <div className="text-2xl">🪪</div>
                     <p className="mt-1 text-xs font-bold">
                       Pet ID
                     </p>
                   </div>
 
                   <div className="min-w-0 rounded-2xl bg-orange-50 p-2 sm:p-3">
-                    <div className="text-2xl">
-                      🎁
-                    </div>
-
+                    <div className="text-2xl">🎁</div>
                     <p className="mt-1 text-xs font-bold">
                       Rewards
                     </p>
@@ -269,9 +333,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ====================================== */}
+      {/* ================================================== */}
       {/* CATEGORIES */}
-      {/* ====================================== */}
+      {/* ================================================== */}
 
       <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="text-center">
@@ -316,13 +380,12 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ====================================== */}
+      {/* ================================================== */}
       {/* DIGITAL PET ID */}
-      {/* ====================================== */}
+      {/* ================================================== */}
 
       <section className="w-full bg-slate-900">
         <div className="mx-auto grid w-full max-w-7xl items-center gap-10 px-4 py-12 text-white sm:px-6 sm:py-16 md:grid-cols-2 md:gap-12">
-          {/* PET ID SAMPLE */}
 
           <div className="min-w-0">
             <div className="mx-auto w-full max-w-sm rounded-[2rem] bg-white p-5 text-slate-900 shadow-xl sm:p-6">
@@ -371,8 +434,6 @@ export default function Home() {
             </div>
           </div>
 
-          {/* DESCRIPTION */}
-
           <div className="min-w-0">
             <p className="font-bold uppercase tracking-wider text-orange-400">
               Pet Identity
@@ -406,9 +467,9 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ====================================== */}
+      {/* ================================================== */}
       {/* FEATURES */}
-      {/* ====================================== */}
+      {/* ================================================== */}
 
       <section className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
         <div className="text-center">
@@ -443,20 +504,19 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ====================================== */}
+      {/* ================================================== */}
       {/* QUICK ACTIONS */}
-      {/* ====================================== */}
+      {/* ================================================== */}
 
       <section className="w-full bg-white">
         <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-16">
           <div className="grid w-full gap-5 sm:grid-cols-2 lg:grid-cols-4">
+
             <Link
               href="/orders"
               className="min-w-0 rounded-2xl bg-blue-50 p-5 transition hover:shadow-md sm:p-6"
             >
-              <div className="text-3xl">
-                📦
-              </div>
+              <div className="text-3xl">📦</div>
 
               <h3 className="mt-3 font-bold">
                 My Orders
@@ -471,9 +531,7 @@ export default function Home() {
               href="/rewards"
               className="min-w-0 rounded-2xl bg-yellow-50 p-5 transition hover:shadow-md sm:p-6"
             >
-              <div className="text-3xl">
-                🎁
-              </div>
+              <div className="text-3xl">🎁</div>
 
               <h3 className="mt-3 font-bold">
                 Paw Points
@@ -488,9 +546,7 @@ export default function Home() {
               href="/reminders"
               className="min-w-0 rounded-2xl bg-purple-50 p-5 transition hover:shadow-md sm:p-6"
             >
-              <div className="text-3xl">
-                ⏰
-              </div>
+              <div className="text-3xl">⏰</div>
 
               <h3 className="mt-3 font-bold">
                 Reminders
@@ -505,9 +561,7 @@ export default function Home() {
               href="/support"
               className="min-w-0 rounded-2xl bg-green-50 p-5 transition hover:shadow-md sm:p-6"
             >
-              <div className="text-3xl">
-                💬
-              </div>
+              <div className="text-3xl">💬</div>
 
               <h3 className="mt-3 font-bold">
                 Support
@@ -521,13 +575,14 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ====================================== */}
+      {/* ================================================== */}
       {/* CUSTOMER SUPPORT */}
-      {/* ====================================== */}
+      {/* ================================================== */}
 
       <section className="w-full bg-orange-50">
         <div className="mx-auto w-full max-w-7xl px-4 py-12 sm:px-6 sm:py-14">
           <div className="flex w-full flex-col items-start justify-between gap-7 rounded-3xl bg-white p-5 shadow-sm sm:p-8 md:flex-row md:items-center md:p-10">
+
             <div className="min-w-0 max-w-2xl">
               <p className="font-bold uppercase tracking-wider text-orange-600">
                 Need Help?
@@ -554,12 +609,13 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ====================================== */}
+      {/* ================================================== */}
       {/* FINAL CTA */}
-      {/* ====================================== */}
+      {/* ================================================== */}
 
       <section className="w-full bg-orange-500">
         <div className="mx-auto w-full max-w-5xl px-4 py-12 text-center text-white sm:px-6 sm:py-16">
+
           <div className="text-5xl">
             🐾
           </div>
@@ -592,13 +648,15 @@ export default function Home() {
         </div>
       </section>
 
-      {/* ====================================== */}
+      {/* ================================================== */}
       {/* FOOTER */}
-      {/* ====================================== */}
+      {/* ================================================== */}
 
       <footer className="w-full bg-slate-950 text-white">
         <div className="mx-auto w-full max-w-7xl px-4 py-10 sm:px-6 sm:py-12">
+
           <div className="grid w-full gap-8 sm:grid-cols-2 md:grid-cols-4 md:gap-10">
+
             {/* BRAND */}
 
             <div className="min-w-0">
@@ -695,6 +753,7 @@ export default function Home() {
               </h3>
 
               <div className="mt-4 flex flex-col gap-3 text-sm text-slate-400">
+
                 <Link
                   href="/support"
                   className="hover:text-white"
@@ -702,19 +761,36 @@ export default function Home() {
                   Customer Support
                 </Link>
 
-                <Link
-                  href="/login"
-                  className="hover:text-white"
-                >
-                  Login
-                </Link>
+                {customer ? (
+                  <Link
+                    href="/profile"
+                    className="hover:text-white"
+                  >
+                    My Profile
+                  </Link>
+                ) : (
+                  <>
+                    <Link
+                      href="/login"
+                      className="hover:text-white"
+                    >
+                      Login
+                    </Link>
+
+                    <Link
+                      href="/signup"
+                      className="hover:text-white"
+                    >
+                      Sign Up
+                    </Link>
+                  </>
+                )}
               </div>
             </div>
           </div>
 
           <div className="mt-10 border-t border-slate-800 pt-6 text-center text-sm text-slate-500">
-            © {new Date().getFullYear()} Pet PWA. All
-            rights reserved.
+            © {new Date().getFullYear()} Pet PWA. All rights reserved.
           </div>
         </div>
       </footer>
