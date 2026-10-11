@@ -163,15 +163,19 @@ export default async function Home() {
 
             {customer ? (
               <>
-                <Link
-                  href="/profile"
-                  className="max-w-32 truncate rounded-xl bg-[#FFF1DD] px-3 py-2"
-                >
-                  👤
-                  <span className="hidden sm:inline">
-                    {" "}{customer.name || "Profile"}
-                  </span>
-                </Link>
+               
+<Link
+  href="/profile"
+  className="flex shrink-0 items-center gap-2 whitespace-nowrap rounded-xl bg-[#FFF1DD] px-3 py-2 text-sm font-bold text-[#194532] transition hover:bg-[#FFE5C4]"
+>
+  <span>👤</span>
+  <span>
+    {customer.name
+      ? `Hi, ${customer.name.trim().split(/\s+/)[0]}`
+      : "My Profile"}
+  </span>
+</Link>
+
 
                 <div className="[&_button]:px-2 [&_button]:py-2 [&_button]:text-xs">
                   <LogoutButton />

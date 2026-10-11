@@ -2,138 +2,309 @@
 "use client";
 
 import Link from "next/link";
-import { FormEvent, useEffect, useState } from "react";
+import {
+  FormEvent,
+  useEffect,
+  useState,
+} from "react";
 
 type Pet = {
   id: number;
   name: string;
   type: string;
-  photoUrl: string | null;
   breed: string | null;
   gender: string | null;
+  photoUrl: string | null;
   dateOfBirth: string | null;
   weight: number | null;
   allergies: string | null;
-  createdAt: string;
   petId: {
-    id: number;
     petCode: string;
     status: string;
     qrUrl?: string;
   } | null;
 };
 
-function PetNavbar() {
-  return (
-    <nav className="border-b border-gray-200 bg-white">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="text-3xl">🐾</span>
-          <div>
-            <h1 className="text-xl font-bold text-slate-900">
-              Pet PWA
-            </h1>
-            <p className="text-xs text-gray-500">
-              Shop • Pet ID • Rewards
-            </p>
-          </div>
-        </Link>
+type Celebration = {
+  name: string;
+  code: string;
+  type: string;
+};
 
-        <div className="flex flex-wrap items-center gap-5 text-sm sm:text-base">
-          <Link
-            href="/shop"
-            className="font-semibold text-gray-600 hover:text-orange-600"
-          >
-            Shop
-          </Link>
-          <Link
-            href="/orders"
-            className="font-semibold text-gray-600 hover:text-orange-600"
-          >
-            Orders
-          </Link>
-          <Link
-            href="/rewards"
-            className="font-semibold text-gray-600 hover:text-orange-600"
-          >
-            Rewards
-          </Link>
-          <Link
-            href="/profile"
-            className="font-semibold text-gray-600 hover:text-orange-600"
-          >
-            Profile
-          </Link>
-        </div>
+const links = [
+  { name: "Shop", href: "/shop" },
+  { name: "My Pets", href: "/pets" },
+  { name: "Orders", href: "/orders" },
+  { name: "Rewards", href: "/rewards" },
+  { name: "Reminders", href: "/reminders" },
+  { name: "Support", href: "/support" },
+];
+
+const inputStyle =
+  "w-full rounded-xl border border-[#DDE8DD] bg-white px-4 py-3 text-sm text-[#194532] outline-none focus:border-[#205D43]";
+
+function Navbar({
+  customerName,
+}: {
+  customerName: string;
+}) {
+  const firstName = customerName.trim().split(/\s+/)[0];
+
+  return (
+    <>
+      <div className="bg-[#205D43] px-4 py-2 text-center text-xs font-bold text-white sm:text-sm">
+        🐾 Everything your furry friend loves, all in one place!
       </div>
-    </nav>
+
+      <header className="border-b border-[#E9E8E1] bg-white">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-4 py-4 sm:px-6">
+          <Link
+            href="/"
+            className="flex items-center gap-2 text-xl font-black text-[#194532]"
+          >
+            <span className="rounded-xl bg-[#FFECD7] p-2">
+              🐾
+            </span>
+            Pet PWA
+          </Link>
+
+          <nav className="flex flex-wrap items-center gap-4 text-sm font-bold text-[#194532]">
+            {links.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={
+                  link.href === "/pets"
+                    ? "text-[#D36F39]"
+                    : "hover:text-[#D36F39]"
+                }
+              >
+                {link.name}
+              </Link>
+            ))}
+
+            <Link
+              href="/cart"
+              className="rounded-xl bg-[#EAF4EB] px-3 py-2"
+            >
+              🛒 Cart
+            </Link>
+
+            <Link
+              href="/profile"
+              className="whitespace-nowrap rounded-xl bg-[#FFF1DD] px-3 py-2"
+            >
+              👤 {firstName ? `Hi, ${firstName}` : "Profile"}
+            </Link>
+          </nav>
+        </div>
+      </header>
+    </>
   );
 }
 
-function getPetEmoji(petType: string) {
-  if (petType === "Dog") return "🐶";
-  if (petType === "Cat") return "🐱";
-  return "🐾";
+function petEmoji(type: string) {
+  return type === "Dog"
+    ? "🐶"
+    : type === "Cat"
+      ? "🐱"
+      : "🐾";
 }
 
 function formatDate(date: string | null) {
   if (!date) return "Not added";
 
   const parsed = new Date(date);
-  if (Number.isNaN(parsed.getTime())) return "Not added";
 
-  return new Intl.DateTimeFormat("en-IN", {
+  if (Number.isNaN(parsed.getTime())) {
+    return "Not added";
+  }
+
+  return parsed.toLocaleDateString("en-IN", {
     day: "2-digit",
     month: "short",
     year: "numeric",
-  }).format(parsed);
+  });
 }
 
-function getStatusStyle(status: string) {
-  switch (status) {
-    case "ACTIVE":
-      return "bg-green-100 text-green-700";
-    case "UNCLAIMED":
-      return "bg-yellow-100 text-yellow-700";
-    case "LOST":
-      return "bg-red-100 text-red-700";
-    case "DISABLED":
-      return "bg-gray-200 text-gray-700";
-    default:
-      return "bg-gray-100 text-gray-700";
-  }
+function InfoCard({
+  emoji,
+  title,
+  value,
+}: {
+  emoji: string;
+  title: string;
+  value: string;
+}) {
+  return (
+    <div className="rounded-2xl bg-[#FFFCF8] p-4">
+      <p className="text-xl">{emoji}</p>
+      <p className="mt-2 text-xs text-[#708579]">
+        {title}
+      </p>
+      <p className="mt-1 break-words text-sm font-bold text-[#194532]">
+        {value}
+      </p>
+    </div>
+  );
 }
 
-const inputClass =
-  "mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 text-slate-900 outline-none focus:border-orange-500";
+function CelebrationPopup({
+  celebration,
+  onClose,
+}: {
+  celebration: Celebration;
+  onClose: () => void;
+}) {
+  useEffect(() => {
+    const previousOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
+    function onKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+
+    window.addEventListener("keydown", onKeyDown);
+
+    return () => {
+      document.body.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className="fixed inset-0 z-[100] flex items-center justify-center bg-[#10291F]/65 p-4 backdrop-blur-sm"
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="activation-success-title"
+    >
+      <div className="relative w-full max-w-md overflow-hidden rounded-[36px] bg-[#FFFCF8] p-7 text-center shadow-2xl sm:p-9">
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close celebration"
+          className="absolute right-5 top-5 rounded-full bg-white px-3 py-2 text-[#60786B] shadow-sm"
+        >
+          ✕
+        </button>
+
+        <div className="pointer-events-none absolute left-5 top-10 animate-bounce text-3xl">
+          🎊
+        </div>
+
+        <div className="pointer-events-none absolute right-12 top-16 animate-bounce text-3xl">
+          🎉
+        </div>
+
+        <div className="pointer-events-none absolute bottom-28 left-5 text-2xl">
+          ✨
+        </div>
+
+        <div className="pointer-events-none absolute bottom-20 right-6 text-2xl">
+          🐾
+        </div>
+
+        <div className="mx-auto mt-4 flex h-28 w-28 animate-bounce items-center justify-center rounded-full border-8 border-white bg-[#E8F2E7] text-6xl shadow-lg">
+          {petEmoji(celebration.type)}
+        </div>
+
+        <p className="mt-7 text-xs font-black uppercase tracking-[0.2em] text-[#D36F39]">
+          ✨ A PAW-SOME MOMENT ✨
+        </p>
+
+        <h2
+          id="activation-success-title"
+          className="mt-3 text-3xl font-black leading-tight text-[#194532]"
+        >
+          Yay! You&apos;re Official! 🎉
+        </h2>
+
+        <p className="mt-4 text-sm leading-7 text-[#60786B]">
+          Hooray!{" "}
+          <span className="font-black text-[#205D43]">
+            {celebration.name}
+          </span>
+          &apos;s Pet ID is now officially activated!
+          Your furry friend is ready for new adventures.
+        </p>
+
+        <div className="mt-6 rounded-3xl bg-[#FFF0DC] px-5 py-6">
+          <p className="text-xs font-black uppercase tracking-widest text-[#B96035]">
+            🏷️ Permanent Pet ID
+          </p>
+
+          <p className="mt-2 break-all text-3xl font-black tracking-wide text-[#D36F39]">
+            {celebration.code}
+          </p>
+
+          <span className="mt-3 inline-block rounded-full bg-[#DDF4E4] px-4 py-2 text-xs font-black text-[#205D43]">
+            ✓ Successfully Activated
+          </span>
+        </div>
+
+        <p className="mt-5 text-xs text-[#708579]">
+          Every pet is one of a kind. 💚
+        </p>
+
+        <button
+          type="button"
+          onClick={() => {
+            onClose();
+            document
+              .getElementById("my-pet-cards")
+              ?.scrollIntoView({ behavior: "smooth" });
+          }}
+          className="mt-7 w-full rounded-2xl bg-[#205D43] px-6 py-4 font-black text-white transition hover:bg-[#174934]"
+        >
+          View My Pet ID 🐾
+        </button>
+
+        <button
+          type="button"
+          onClick={onClose}
+          className="mt-3 text-sm font-bold text-[#708579]"
+        >
+          Keep Celebrating! ✨
+        </button>
+      </div>
+    </div>
+  );
+}
 
 export default function PetsPage() {
   const [pets, setPets] = useState<Pet[]>([]);
+  const [customerName, setCustomerName] = useState("");
   const [loading, setLoading] = useState(true);
   const [authRequired, setAuthRequired] = useState(false);
+
+  const [showForm, setShowForm] = useState(false);
   const [saving, setSaving] = useState(false);
 
-  const [issuingPetId, setIssuingPetId] =
-    useState<number | null>(null);
-
-  const [sendingActivationOtp, setSendingActivationOtp] =
-    useState<number | null>(null);
-
-  const [activatingPetId, setActivatingPetId] =
-    useState<number | null>(null);
+  const [issuingId, setIssuingId] = useState<number | null>(
+    null
+  );
+  const [sendingOtp, setSendingOtp] = useState<number | null>(
+    null
+  );
+  const [activating, setActivating] = useState<number | null>(
+    null
+  );
+  const [removingId, setRemovingId] = useState<number | null>(
+    null
+  );
 
   const [activationPetId, setActivationPetId] =
     useState<number | null>(null);
-
   const [otp, setOtp] = useState("");
-  const [demoActivationOtp, setDemoActivationOtp] =
-    useState("");
+  const [demoOtp, setDemoOtp] = useState("");
+
+  const [celebration, setCelebration] =
+    useState<Celebration | null>(null);
 
   const [error, setError] = useState("");
   const [success, setSuccess] = useState("");
-  const [showForm, setShowForm] = useState(false);
 
-  // ADD PET FORM
   const [name, setName] = useState("");
   const [type, setType] = useState("Dog");
   const [breed, setBreed] = useState("");
@@ -142,47 +313,37 @@ export default function PetsPage() {
   const [weight, setWeight] = useState("");
   const [allergies, setAllergies] = useState("");
 
-  // LOAD PETS
   async function loadPets(showLoader = true) {
     try {
       if (showLoader) setLoading(true);
-      setError("");
 
       const response = await fetch("/api/pets", {
-        cache: "no-store",
         credentials: "same-origin",
+        cache: "no-store",
       });
 
       const data = await response.json();
 
-      const message = String(
-        data.message || data.error || ""
-      );
-
-      if (
-        response.status === 401 ||
-        response.status === 403 ||
-        (!response.ok &&
-          /log\s*in|login|sign\s*in|unauthori[sz]ed/i.test(
-            message
-          ))
-      ) {
+      if (response.status === 401 || response.status === 403) {
         setAuthRequired(true);
         setPets([]);
-        setShowForm(false);
         return;
       }
 
       if (!response.ok) {
-        setError(message || "Could not load your pets.");
-        return;
+        throw new Error(
+          data.error || data.message || "Could not load pets."
+        );
       }
 
       setAuthRequired(false);
       setPets(Array.isArray(data.pets) ? data.pets : []);
     } catch (err) {
-      console.error("Load pets error:", err);
-      setError("Could not load your pets. Please try again.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not load pets."
+      );
     } finally {
       if (showLoader) setLoading(false);
     }
@@ -190,17 +351,39 @@ export default function PetsPage() {
 
   useEffect(() => {
     loadPets();
+
+    async function loadProfile() {
+      try {
+        const response = await fetch("/api/profile", {
+          credentials: "same-origin",
+        });
+
+        if (!response.ok) return;
+
+        const data = await response.json();
+
+        setCustomerName(
+          data.customer?.name ??
+            data.profile?.name ??
+            data.name ??
+            ""
+        );
+      } catch (err) {
+        console.error("Profile error:", err);
+      }
+    }
+
+    loadProfile();
   }, []);
 
-  // CREATE PET
-  async function handleSubmit(event: FormEvent<HTMLFormElement>) {
+  async function addPet(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
-    try {
-      setSaving(true);
-      setError("");
-      setSuccess("");
+    setSaving(true);
+    setError("");
+    setSuccess("");
 
+    try {
       const response = await fetch("/api/pets", {
         method: "POST",
         headers: {
@@ -221,12 +404,9 @@ export default function PetsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(
-          data.message ||
-            data.error ||
-            "Could not create pet profile."
+        throw new Error(
+          data.error || data.message || "Could not add pet."
         );
-        return;
       }
 
       setName("");
@@ -239,22 +419,21 @@ export default function PetsPage() {
       setShowForm(false);
 
       await loadPets(false);
-      setSuccess("Pet profile created successfully! 🐾");
+      setSuccess("Your furry friend has joined the family! 🐾");
     } catch (err) {
-      console.error("Create pet error:", err);
-      setError("Something went wrong while creating the pet profile.");
+      setError(
+        err instanceof Error ? err.message : "Could not add pet."
+      );
     } finally {
       setSaving(false);
     }
   }
 
-  // ISSUE PERMANENT PET ID
   async function issuePetId(petId: number) {
-    try {
-      setIssuingPetId(petId);
-      setError("");
-      setSuccess("");
+    setIssuingId(petId);
+    setError("");
 
+    try {
       const response = await fetch(
         `/api/pets/${petId}/issue-id`,
         {
@@ -266,34 +445,32 @@ export default function PetsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(
-          data.message || data.error || "Could not issue Pet ID."
+        throw new Error(
+          data.error || data.message || "Could not issue Pet ID."
         );
-        return;
       }
 
       await loadPets(false);
-
-      setSuccess(
-        `Pet ID ${data.petId?.petCode || ""} issued successfully! 🪪`
-      );
+      setSuccess("Your pet has a new permanent ID! 🏷️");
     } catch (err) {
-      console.error("Issue Pet ID error:", err);
-      setError("Something went wrong while issuing the Pet ID.");
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not issue Pet ID."
+      );
     } finally {
-      setIssuingPetId(null);
+      setIssuingId(null);
     }
   }
 
-  // SEND ACTIVATION OTP
-  async function openActivation(petId: number) {
-    try {
-      setSendingActivationOtp(petId);
-      setError("");
-      setSuccess("");
-      setOtp("");
-      setDemoActivationOtp("");
+  async function sendActivationOtp(petId: number) {
+    setSendingOtp(petId);
+    setError("");
+    setSuccess("");
+    setOtp("");
+    setDemoOtp("");
 
+    try {
       const response = await fetch(
         `/api/pets/${petId}/send-activation-otp`,
         {
@@ -305,643 +482,675 @@ export default function PetsPage() {
       const data = await response.json();
 
       if (!response.ok) {
-        setError(
-          data.message ||
-            data.error ||
+        throw new Error(
+          data.error ||
+            data.message ||
             "Could not send activation OTP."
         );
-        return;
       }
 
       setActivationPetId(petId);
-
-      if (data.demoOtp) {
-        setDemoActivationOtp(String(data.demoOtp));
-      }
-
-      setSuccess("Activation OTP generated successfully.");
+      setDemoOtp(
+        data.demoOtp ? String(data.demoOtp) : ""
+      );
     } catch (err) {
-      console.error("Send activation OTP error:", err);
       setError(
-        "Something went wrong while generating the activation OTP."
+        err instanceof Error
+          ? err.message
+          : "Could not send OTP."
       );
     } finally {
-      setSendingActivationOtp(null);
+      setSendingOtp(null);
     }
   }
 
-  // CANCEL ACTIVATION
-  function cancelActivation() {
-    setActivationPetId(null);
-    setOtp("");
-    setDemoActivationOtp("");
-    setError("");
-    setSuccess("");
-  }
-
-  // ACTIVATE PET ID
-  async function activatePetId(petId: number) {
-    setError("");
-    setSuccess("");
-
+  async function activatePetId(pet: Pet) {
     if (!/^\d{6}$/.test(otp.trim())) {
-      setError("OTP must contain exactly 6 digits.");
+      setError("Please enter a valid 6-digit OTP.");
       return;
     }
 
-    try {
-      setActivatingPetId(petId);
+    setActivating(pet.id);
+    setError("");
+    setSuccess("");
 
+    try {
       const response = await fetch(
-        `/api/pets/${petId}/activate`,
+        `/api/pets/${pet.id}/activate`,
         {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
           },
           credentials: "same-origin",
-          body: JSON.stringify({
-            otp: otp.trim(),
-          }),
+          body: JSON.stringify({ otp: otp.trim() }),
         }
       );
 
       const data = await response.json();
 
       if (!response.ok) {
-        setError(
-          data.message ||
-            data.error ||
+        throw new Error(
+          data.error ||
+            data.message ||
             "Could not activate Pet ID."
         );
-        return;
       }
 
+      const code =
+        data.petId?.petCode ||
+        pet.petId?.petCode ||
+        "Activated";
+
       setOtp("");
-      setDemoActivationOtp("");
+      setDemoOtp("");
       setActivationPetId(null);
 
       await loadPets(false);
 
-      setSuccess(
-        `Pet ID ${data.petId?.petCode || ""} activated successfully! ✅`
-      );
+      // Show celebration ONLY after successful activation.
+      setCelebration({
+        name: pet.name,
+        code,
+        type: pet.type,
+      });
     } catch (err) {
-      console.error("Activate Pet ID error:", err);
       setError(
-        "Something went wrong while activating the Pet ID."
+        err instanceof Error
+          ? err.message
+          : "Could not activate Pet ID."
       );
     } finally {
-      setActivatingPetId(null);
+      setActivating(null);
     }
   }
 
-  // LOADING
+  async function removePetId(pet: Pet) {
+    const confirmed = window.confirm(
+      `Remove ${pet.name}'s Pet ID ${pet.petId?.petCode}?\n\nThis will disable the permanent ID. The pet profile will remain saved.`
+    );
+
+    if (!confirmed) return;
+
+    setRemovingId(pet.id);
+    setError("");
+    setSuccess("");
+
+    try {
+      const response = await fetch(
+        `/api/pets/${pet.id}/remove-id`,
+        {
+          method: "DELETE",
+          credentials: "same-origin",
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(
+          data.error ||
+            data.message ||
+            "Could not remove Pet ID."
+        );
+      }
+
+      await loadPets(false);
+      setSuccess(
+        `${pet.name}'s Pet ID has been disabled. The pet profile is safe.`
+      );
+    } catch (err) {
+      setError(
+        err instanceof Error
+          ? err.message
+          : "Could not remove Pet ID."
+      );
+    } finally {
+      setRemovingId(null);
+    }
+  }
+
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#fafaf7]">
+      <main className="flex min-h-screen items-center justify-center bg-[#FFFCF8] text-[#194532]">
         <div className="text-center">
-          <div className="text-6xl">🐾</div>
-          <p className="mt-4 font-semibold text-gray-600">
-            Loading your pets...
+          <div className="animate-bounce text-6xl">🐾</div>
+          <p className="mt-4 font-bold">
+            Loading your furry family...
           </p>
         </div>
       </main>
     );
   }
 
-  // LOGIN REQUIRED
-  if (authRequired) {
-    return (
-      <main className="min-h-screen bg-[#fafaf7]">
-        <PetNavbar />
-
-        <section className="mx-auto max-w-3xl px-6 py-16">
-          <div className="rounded-3xl border border-orange-100 bg-white px-6 py-14 text-center shadow-sm sm:px-12">
-            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-orange-50 text-6xl">
-              🐶
-            </div>
-
-            <h1 className="mt-7 text-3xl font-bold text-slate-900">
-              Your Pet Profiles Are Waiting!
-            </h1>
-
-            <p className="mx-auto mt-4 max-w-lg leading-7 text-gray-600">
-              Log in or create an account to add your furry
-              friends, manage their Pet IDs, view QR codes
-              and keep their important details in one place.
-            </p>
-
-            <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
-              <Link
-                href="/login?next=%2Fpets"
-                className="rounded-xl bg-orange-500 px-8 py-3.5 font-bold text-white hover:bg-orange-600"
-              >
-                Login
-              </Link>
-
-              <Link
-                href="/signup?next=%2Fpets"
-                className="rounded-xl border border-orange-500 bg-white px-8 py-3.5 font-bold text-orange-600 hover:bg-orange-50"
-              >
-                Create Account
-              </Link>
-            </div>
-
-            <p className="mt-7 text-sm text-gray-500">
-              🐾 Your pet profiles will appear here once you&apos;re signed in.
-            </p>
-          </div>
-        </section>
-      </main>
-    );
-  }
-
-  // MAIN PAGE
   return (
-    <main className="min-h-screen bg-[#fafaf7]">
-      <PetNavbar />
+    <main className="min-h-screen bg-[#FFFCF8] text-[#194532]">
+      <Navbar customerName={customerName} />
 
-      <section className="mx-auto max-w-6xl px-4 py-8 sm:px-6 sm:py-10">
-        {/* HEADER */}
-        <div className="flex flex-wrap items-center justify-between gap-4">
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wider text-orange-600">
-              PET PROFILES
-            </p>
-
-            <h1 className="mt-1 text-3xl font-bold text-slate-900">
-              My Pets
+      <div className="mx-auto max-w-7xl px-4 py-8 sm:px-6">
+        {authRequired ? (
+          <div className="rounded-3xl bg-[#E8F2E7] p-10 text-center">
+            <div className="text-6xl">🐶</div>
+            <h1 className="mt-5 text-3xl font-black">
+              Your furry family awaits!
             </h1>
-
-            <p className="mt-1 text-sm text-gray-500">
-              Create and manage profiles for your pets.
+            <p className="mt-3 text-[#60786B]">
+              Please log in to manage your pets.
             </p>
+            <Link
+              href="/login?next=%2Fpets"
+              className="mt-6 inline-block rounded-xl bg-[#205D43] px-6 py-3 font-bold text-white"
+            >
+              Login
+            </Link>
           </div>
+        ) : (
+          <>
+            {/* WELCOME BANNER */}
+            <section className="rounded-[32px] bg-[#E8F2E7] px-6 py-8 sm:px-10">
+              <div className="flex flex-col items-center justify-between gap-8 sm:flex-row">
+                <div className="max-w-xl">
+                  <p className="text-xs font-black uppercase tracking-widest text-[#D36F39]">
+                    🐾 YOUR LITTLE FAMILY
+                  </p>
 
-          <button
-            type="button"
-            onClick={() => {
-              setShowForm(!showForm);
-              setError("");
-              setSuccess("");
-            }}
-            className="rounded-xl bg-orange-500 px-5 py-2.5 text-sm font-bold text-white hover:bg-orange-600"
-          >
-            {showForm ? "Cancel" : "+ Add Pet"}
-          </button>
-        </div>
+                  <h1 className="mt-4 text-3xl font-black leading-tight sm:text-5xl">
+                    Their world,
+                    <br />
+                    your love. 💚
+                  </h1>
 
-        {/* ERROR */}
-        {error && (
-          <div
-            role="alert"
-            className="mt-5 rounded-xl border border-red-100 bg-red-50 p-4 text-sm font-medium text-red-600"
-          >
-            {error}
-          </div>
-        )}
+                  <p className="mt-4 max-w-md text-sm leading-7 text-[#60786B]">
+                    A happy little corner for your furry
+                    family. Keep their details, Pet IDs and
+                    special memories in one place.
+                  </p>
 
-        {/* SUCCESS */}
-        {success && (
-          <div
-            role="status"
-            className="mt-5 rounded-xl border border-green-100 bg-green-50 p-4 text-sm font-medium text-green-700"
-          >
-            {success}
-          </div>
-        )}
-
-        {/* ADD PET FORM */}
-        {showForm && (
-          <div className="mt-6 rounded-2xl border border-gray-200 bg-white p-5 shadow-sm sm:p-7">
-            <h2 className="text-xl font-bold text-slate-900">
-              Add a Pet
-            </h2>
-
-            <p className="mt-1 text-sm text-gray-500">
-              Pet name and type are required. Everything else is optional.
-            </p>
-
-            <form onSubmit={handleSubmit} className="mt-6">
-              <div className="grid gap-4 sm:grid-cols-2">
-                <div>
-                  <label htmlFor="pet-name" className="text-sm font-bold text-slate-700">
-                    Pet Name *
-                  </label>
-                  <input
-                    id="pet-name"
-                    type="text"
-                    value={name}
-                    onChange={(event) => setName(event.target.value)}
-                    placeholder="Example: Bruno"
-                    required
-                    minLength={2}
-                    className={inputClass}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="pet-type" className="text-sm font-bold text-slate-700">
-                    Pet Type *
-                  </label>
-                  <select
-                    id="pet-type"
-                    value={type}
-                    onChange={(event) => setType(event.target.value)}
-                    className={inputClass}
+                  <button
+                    type="button"
+                    onClick={() => setShowForm(!showForm)}
+                    className="mt-6 rounded-xl bg-[#205D43] px-6 py-3 text-sm font-black text-white"
                   >
-                    <option value="Dog">🐶 Dog</option>
-                    <option value="Cat">🐱 Cat</option>
-                  </select>
+                    {showForm ? "Cancel" : "+ Add a Pet"}
+                  </button>
                 </div>
 
-                <div>
-                  <label htmlFor="pet-breed" className="text-sm font-bold text-slate-700">
-                    Breed
-                  </label>
-                  <input
-                    id="pet-breed"
-                    type="text"
-                    value={breed}
-                    onChange={(event) => setBreed(event.target.value)}
-                    placeholder="Example: Labrador"
-                    className={inputClass}
-                  />
-                </div>
+                {/* COMPACT PHOTO */}
+                <div className="relative shrink-0">
+                  <div className="h-[160px] w-[180px] overflow-hidden rounded-[28px] border-4 border-white bg-[#FFF1DD] shadow-xl sm:h-[220px] sm:w-[260px]">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=600&q=85"
+                      alt="Happy dogs"
+                      className="h-full w-full object-cover"
+                    />
+                  </div>
 
-                <div>
-                  <label htmlFor="pet-gender" className="text-sm font-bold text-slate-700">
-                    Gender
-                  </label>
-                  <select
-                    id="pet-gender"
-                    value={gender}
-                    onChange={(event) => setGender(event.target.value)}
-                    className={inputClass}
-                  >
-                    <option value="">Select gender</option>
-                    <option value="Male">Male</option>
-                    <option value="Female">Female</option>
-                  </select>
-                </div>
-
-                <div>
-                  <label htmlFor="pet-dob" className="text-sm font-bold text-slate-700">
-                    Date of Birth
-                  </label>
-                  <input
-                    id="pet-dob"
-                    type="date"
-                    value={dateOfBirth}
-                    max={new Date().toISOString().split("T")[0]}
-                    onChange={(event) =>
-                      setDateOfBirth(event.target.value)
-                    }
-                    className={inputClass}
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="pet-weight" className="text-sm font-bold text-slate-700">
-                    Weight (kg)
-                  </label>
-                  <input
-                    id="pet-weight"
-                    type="number"
-                    value={weight}
-                    onChange={(event) => setWeight(event.target.value)}
-                    placeholder="Example: 18.5"
-                    min="0.01"
-                    step="0.01"
-                    className={inputClass}
-                  />
-                </div>
-
-                <div className="sm:col-span-2">
-                  <label htmlFor="pet-allergies" className="text-sm font-bold text-slate-700">
-                    Allergies
-                  </label>
-                  <textarea
-                    id="pet-allergies"
-                    value={allergies}
-                    onChange={(event) => setAllergies(event.target.value)}
-                    placeholder="Example: Chicken allergy"
-                    rows={2}
-                    className={inputClass}
-                  />
+                  <span className="absolute -bottom-3 left-1/2 -translate-x-1/2 whitespace-nowrap rounded-full bg-white px-4 py-2 text-xs font-bold text-[#D36F39] shadow">
+                    Made with love 🐾
+                  </span>
                 </div>
               </div>
+            </section>
 
-              <div className="mt-5 rounded-xl bg-orange-50 p-3">
-                <p className="text-xs font-medium text-orange-700">
-                  📷 Pet photo upload will be connected later using Cloudinary or AWS S3.
+            {/* MESSAGES */}
+            {error && (
+              <div
+                role="alert"
+                className="mt-6 rounded-2xl border border-red-200 bg-red-50 p-4 text-sm font-semibold text-red-700"
+              >
+                {error}
+              </div>
+            )}
+
+            {success && (
+              <div
+                role="status"
+                className="mt-6 rounded-2xl border border-green-200 bg-[#EAF7ED] p-4 text-sm font-semibold text-[#205D43]"
+              >
+                {success}
+              </div>
+            )}
+
+            {/* ADD PET FORM */}
+            {showForm && (
+              <form
+                onSubmit={addPet}
+                className="mt-8 rounded-[28px] border border-[#E9E8E1] bg-white p-6 shadow-sm"
+              >
+                <h2 className="mb-6 text-2xl font-black">
+                  Tell us about your pet 🐶
+                </h2>
+
+                <div className="grid gap-4 sm:grid-cols-2">
+                  <label className="space-y-2 text-sm font-bold">
+                    Pet Name *
+                    <input
+                      required
+                      minLength={2}
+                      value={name}
+                      onChange={(e) => setName(e.target.value)}
+                      className={inputStyle}
+                      placeholder="Bruno"
+                    />
+                  </label>
+
+                  <label className="space-y-2 text-sm font-bold">
+                    Pet Type *
+                    <select
+                      value={type}
+                      onChange={(e) => setType(e.target.value)}
+                      className={inputStyle}
+                    >
+                      <option value="Dog">Dog</option>
+                      <option value="Cat">Cat</option>
+                    </select>
+                  </label>
+
+                  <label className="space-y-2 text-sm font-bold">
+                    Breed
+                    <input
+                      value={breed}
+                      onChange={(e) => setBreed(e.target.value)}
+                      className={inputStyle}
+                      placeholder="Labrador"
+                    />
+                  </label>
+
+                  <label className="space-y-2 text-sm font-bold">
+                    Gender
+                    <select
+                      value={gender}
+                      onChange={(e) => setGender(e.target.value)}
+                      className={inputStyle}
+                    >
+                      <option value="">Select gender</option>
+                      <option value="Male">Male</option>
+                      <option value="Female">Female</option>
+                    </select>
+                  </label>
+
+                  <label className="space-y-2 text-sm font-bold">
+                    Birthday
+                    <input
+                      type="date"
+                      value={dateOfBirth}
+                      max={new Date().toISOString().split("T")[0]}
+                      onChange={(e) =>
+                        setDateOfBirth(e.target.value)
+                      }
+                      className={inputStyle}
+                    />
+                  </label>
+
+                  <label className="space-y-2 text-sm font-bold">
+                    Weight (kg)
+                    <input
+                      type="number"
+                      min="0.01"
+                      step="0.01"
+                      value={weight}
+                      onChange={(e) => setWeight(e.target.value)}
+                      className={inputStyle}
+                    />
+                  </label>
+
+                  <label className="space-y-2 text-sm font-bold sm:col-span-2">
+                    Allergies
+                    <textarea
+                      rows={3}
+                      value={allergies}
+                      onChange={(e) =>
+                        setAllergies(e.target.value)
+                      }
+                      className={inputStyle}
+                    />
+                  </label>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={saving}
+                  className="mt-6 rounded-xl bg-[#205D43] px-6 py-3 text-sm font-bold text-white disabled:opacity-50"
+                >
+                  {saving ? "Saving..." : "Create Pet Profile 🐾"}
+                </button>
+              </form>
+            )}
+
+            {/* PETS SECTION */}
+            <section id="my-pet-cards" className="mt-12">
+              <div className="mb-7 flex flex-wrap items-center justify-between gap-4">
+                <div>
+                  <p className="text-xs font-black uppercase tracking-widest text-[#D36F39]">
+                    ALL PAWS WELCOME
+                  </p>
+
+                  <h2 className="mt-2 text-2xl font-black sm:text-4xl">
+                    Meet your furry family 🐾
+                  </h2>
+
+                  <p className="mt-2 text-sm text-[#708579]">
+                    A special space for every little personality.
+                  </p>
+                </div>
+
+                <span className="rounded-full bg-[#FFF0DC] px-5 py-2 text-sm font-bold text-[#B96035]">
+                  🐾 {pets.length}{" "}
+                  {pets.length === 1 ? "Pet" : "Pets"}
+                </span>
+              </div>
+
+              {pets.length === 0 && (
+                <div className="rounded-3xl bg-white p-12 text-center shadow-sm">
+                  <p className="text-6xl">🐶🐱</p>
+                  <h3 className="mt-5 text-2xl font-black">
+                    No pets added yet!
+                  </h3>
+                  <p className="mt-3 text-[#708579]">
+                    Add your first furry friend to get started.
+                  </p>
+                </div>
+              )}
+
+              <div className="grid gap-6 lg:grid-cols-2">
+                {pets.map((pet) => (
+                  <article
+                    key={pet.id}
+                    className="min-w-0 overflow-hidden rounded-[28px] border border-[#E9E8E1] bg-white shadow-sm"
+                  >
+                    {/* PET HEADER */}
+                    <div className="flex items-center gap-4 bg-[#FFF0DC] p-5">
+                      <div className="flex h-20 w-20 shrink-0 items-center justify-center overflow-hidden rounded-full border-4 border-white bg-white text-4xl shadow-sm">
+                        {pet.photoUrl ? (
+                          // eslint-disable-next-line @next/next/no-img-element
+                          <img
+                            src={pet.photoUrl}
+                            alt={pet.name}
+                            className="h-full w-full object-cover"
+                          />
+                        ) : (
+                          petEmoji(pet.type)
+                        )}
+                      </div>
+
+                      <div className="min-w-0 flex-1">
+                        <h3 className="break-words text-xl font-black">
+                          {pet.name} 💛
+                        </h3>
+
+                        <p className="mt-1 text-sm text-[#60786B]">
+                          Your little sunshine
+                        </p>
+
+                        <p className="mt-1 text-xs font-bold text-[#B96035]">
+                          {pet.breed
+                            ? `${pet.breed} · ${pet.type}`
+                            : pet.type}
+                        </p>
+                      </div>
+
+                      {pet.petId && (
+                        <span className="rounded-full bg-[#FFF0C2] px-3 py-1 text-[10px] font-black text-[#A66A00]">
+                          {pet.petId.status}
+                        </span>
+                      )}
+                    </div>
+
+                    <div className="p-4 sm:p-5">
+                      {/* PET DETAILS */}
+                      <div className="grid grid-cols-2 gap-3">
+                        <InfoCard
+                          emoji="🎂"
+                          title="Birthday"
+                          value={formatDate(pet.dateOfBirth)}
+                        />
+
+                        <InfoCard
+                          emoji="⚖️"
+                          title="Weight"
+                          value={
+                            pet.weight !== null
+                              ? `${pet.weight} kg`
+                              : "Not added"
+                          }
+                        />
+
+                        <InfoCard
+                          emoji="🐾"
+                          title="Gender"
+                          value={pet.gender || "Not added"}
+                        />
+
+                        <InfoCard
+                          emoji="💚"
+                          title="Allergies"
+                          value={
+                            pet.allergies ||
+                            "No allergies added"
+                          }
+                        />
+                      </div>
+
+                      {/* DIGITAL PET ID */}
+                      {pet.petId ? (
+                        <div className="mt-5 rounded-3xl bg-[#EAF7ED] p-4">
+                          <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_125px]">
+                            <div className="min-w-0">
+                              <p className="text-xs font-black uppercase text-[#205D43]">
+                                🏷️ My Digital Pet ID
+                              </p>
+
+                              <p className="mt-2 break-all text-2xl font-black text-[#205D43]">
+                                {pet.petId.petCode}
+                              </p>
+
+                              <span className="mt-2 inline-block rounded-full bg-white px-3 py-1 text-[10px] font-black text-[#205D43]">
+                                {pet.petId.status}
+                              </span>
+
+                              <p className="mt-3 text-xs leading-6 text-[#60786B]">
+                                Your pet&apos;s unique identity,
+                                just one scan away.
+                              </p>
+
+                              {pet.petId.status === "UNCLAIMED" && (
+                                <div className="mt-4">
+                                  <p className="text-sm font-black">
+                                    🔐 Activate Pet ID
+                                  </p>
+
+                                  <p className="mt-1 text-xs text-[#60786B]">
+                                    Verify ownership using OTP.
+                                  </p>
+
+                                  {activationPetId !== pet.id ? (
+                                    <button
+                                      type="button"
+                                      onClick={() =>
+                                        sendActivationOtp(pet.id)
+                                      }
+                                      disabled={sendingOtp === pet.id}
+                                      className="mt-3 rounded-xl bg-[#205D43] px-4 py-3 text-xs font-bold text-white disabled:opacity-50"
+                                    >
+                                      {sendingOtp === pet.id
+                                        ? "Sending OTP..."
+                                        : "Activate Pet ID"}
+                                    </button>
+                                  ) : (
+                                    <div className="mt-4 space-y-3">
+                                      <input
+                                        type="text"
+                                        inputMode="numeric"
+                                        maxLength={6}
+                                        placeholder="Enter 6-digit OTP"
+                                        aria-label="Activation OTP"
+                                        value={otp}
+                                        onChange={(e) =>
+                                          setOtp(
+                                            e.target.value.replace(
+                                              /\D/g,
+                                              ""
+                                            )
+                                          )
+                                        }
+                                        className={inputStyle}
+                                      />
+
+                                      {demoOtp && (
+                                        <p className="rounded-xl bg-[#FFF0DC] p-3 text-xs font-bold text-[#B96035]">
+                                          Development OTP: {demoOtp}
+                                        </p>
+                                      )}
+
+                                      <button
+                                        type="button"
+                                        onClick={() =>
+                                          activatePetId(pet)
+                                        }
+                                        disabled={
+                                          activating === pet.id
+                                        }
+                                        className="w-full rounded-xl bg-[#205D43] px-4 py-3 text-xs font-bold text-white disabled:opacity-50"
+                                      >
+                                        {activating === pet.id
+                                          ? "Activating..."
+                                          : "Verify & Activate"}
+                                      </button>
+
+                                      <button
+                                        type="button"
+                                        onClick={() => {
+                                          setActivationPetId(null);
+                                          setOtp("");
+                                          setDemoOtp("");
+                                        }}
+                                        className="w-full rounded-xl bg-white px-4 py-3 text-xs font-bold text-[#60786B]"
+                                      >
+                                        Cancel
+                                      </button>
+                                    </div>
+                                  )}
+                                </div>
+                              )}
+
+                              {pet.petId.status === "ACTIVE" && (
+                                <p className="mt-4 text-sm font-black text-[#205D43]">
+                                  🎉 Pet ID Activated!
+                                </p>
+                              )}
+
+                              {pet.petId.status === "DISABLED" && (
+                                <p className="mt-4 text-xs font-bold text-red-600">
+                                  This Pet ID has been disabled.
+                                </p>
+                              )}
+
+                              {/* REMOVE PET ID */}
+                              {pet.petId.status !== "DISABLED" && (
+                                <button
+                                  type="button"
+                                  onClick={() => removePetId(pet)}
+                                  disabled={removingId === pet.id}
+                                  className="mt-4 block rounded-xl border border-red-200 bg-white px-4 py-2.5 text-xs font-bold text-red-600 transition hover:bg-red-50 disabled:opacity-50"
+                                >
+                                  {removingId === pet.id
+                                    ? "Removing..."
+                                    : "🗑️ Remove Pet ID"}
+                                </button>
+                              )}
+                            </div>
+
+                            {/* QR */}
+                            {pet.petId.status !== "DISABLED" && (
+                              <div className="flex flex-col items-center self-start rounded-2xl bg-white p-3">
+                                <p className="text-[10px] font-black text-[#60786B]">
+                                  PET ID QR
+                                </p>
+
+                                {/* eslint-disable-next-line @next/next/no-img-element */}
+                                <img
+                                  src={`/api/pets/${pet.id}/qr`}
+                                  alt={`${pet.name}'s Pet ID QR`}
+                                  className="mt-2 h-28 w-28 object-contain"
+                                />
+
+                                <a
+                                  href={`/api/pets/${pet.id}/qr`}
+                                  target="_blank"
+                                  rel="noopener noreferrer"
+                                  className="mt-3 rounded-lg border border-[#CDE6D5] px-3 py-2 text-center text-[10px] font-bold text-[#205D43]"
+                                >
+                                  Open QR ↗
+                                </a>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="mt-5 rounded-3xl bg-[#FFF0DC] p-5">
+                          <p className="text-sm font-black text-[#B96035]">
+                            🏷️ No Pet ID yet
+                          </p>
+
+                          <p className="mt-2 text-xs text-[#60786B]">
+                            Give your pet a permanent digital identity.
+                          </p>
+
+                          <button
+                            type="button"
+                            onClick={() => issuePetId(pet.id)}
+                            disabled={issuingId === pet.id}
+                            className="mt-4 rounded-xl bg-[#205D43] px-5 py-3 text-xs font-bold text-white disabled:opacity-50"
+                          >
+                            {issuingId === pet.id
+                              ? "Issuing..."
+                              : "Issue Pet ID"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </article>
+                ))}
+              </div>
+            </section>
+
+            {/* BOTTOM BANNER */}
+            <section className="mt-10 flex flex-wrap items-center justify-between gap-5 rounded-[28px] bg-[#FFF0E2] p-7">
+              <div>
+                <h2 className="text-xl font-black">
+                  More paws, more love! 🐾
+                </h2>
+                <p className="mt-2 text-sm text-[#60786B]">
+                  Add another furry friend to your family.
                 </p>
               </div>
 
               <button
-                type="submit"
-                disabled={saving}
-                className="mt-5 rounded-xl bg-orange-500 px-6 py-3 text-sm font-bold text-white hover:bg-orange-600 disabled:opacity-50"
+                type="button"
+                onClick={() => {
+                  setShowForm(true);
+                  window.scrollTo({
+                    top: 0,
+                    behavior: "smooth",
+                  });
+                }}
+                className="rounded-xl bg-[#205D43] px-6 py-3 text-sm font-bold text-white"
               >
-                {saving ? "Saving Pet..." : "Create Pet Profile"}
+                + Add Pet
               </button>
-            </form>
-          </div>
+            </section>
+          </>
         )}
+      </div>
 
-        {/* EMPTY STATE */}
-        {pets.length === 0 && !showForm && (
-          <div className="mt-7 rounded-2xl border border-gray-200 bg-white px-6 py-14 text-center">
-            <div className="text-6xl">🐶</div>
-
-            <h2 className="mt-4 text-2xl font-bold text-slate-900">
-              No pets added yet
-            </h2>
-
-            <p className="mx-auto mt-2 max-w-md text-gray-500">
-              Create your first pet profile to get started
-              with Pet ID, QR and Paw Points.
-            </p>
-
-            <button
-              type="button"
-              onClick={() => setShowForm(true)}
-              className="mt-6 rounded-xl bg-orange-500 px-6 py-3 font-bold text-white hover:bg-orange-600"
-            >
-              + Add Your First Pet
-            </button>
-          </div>
-        )}
-
-        {/* COMPACT PET CARDS */}
-        {pets.length > 0 && (
-          <div className="mt-7 grid gap-5 lg:grid-cols-2">
-            {pets.map((pet) => (
-              <article
-                key={pet.id}
-                className="min-w-0 overflow-hidden rounded-2xl border border-gray-200 bg-white shadow-sm"
-              >
-                {/* COMPACT PET HEADER */}
-                <div className="flex items-center gap-4 bg-gradient-to-r from-orange-50 to-yellow-50 px-5 py-4">
-                  {pet.photoUrl ? (
-                    <img
-                      src={pet.photoUrl}
-                      alt={pet.name}
-                      className="h-16 w-16 shrink-0 rounded-full object-cover"
-                    />
-                  ) : (
-                    <div className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-white text-4xl shadow-sm">
-                      {getPetEmoji(pet.type)}
-                    </div>
-                  )}
-
-                  <div className="min-w-0 flex-1">
-                    <h2 className="truncate text-xl font-bold text-slate-900">
-                      {pet.name}
-                    </h2>
-
-                    <p className="mt-1 text-sm text-gray-500">
-                      {pet.breed
-                        ? `${pet.breed} • ${pet.type}`
-                        : pet.type}
-                    </p>
-                  </div>
-
-                  {pet.petId && (
-                    <span
-                      className={`shrink-0 rounded-full px-2.5 py-1 text-[10px] font-bold ${getStatusStyle(
-                        pet.petId.status
-                      )}`}
-                    >
-                      {pet.petId.status}
-                    </span>
-                  )}
-                </div>
-
-                <div className="p-5">
-                  {/* PET DETAILS GRID */}
-                  <div className="grid grid-cols-2 gap-x-5 gap-y-3 text-sm">
-                    <div>
-                      <p className="text-xs text-gray-400">Gender</p>
-                      <p className="mt-1 font-semibold text-slate-700">
-                        {pet.gender || "Not added"}
-                      </p>
-                    </div>
-
-                    <div>
-                      <p className="text-xs text-gray-400">Weight</p>
-                      <p className="mt-1 font-semibold text-slate-700">
-                        {pet.weight !== null
-                          ? `${pet.weight} kg`
-                          : "Not added"}
-                      </p>
-                    </div>
-
-                    <div className="col-span-2">
-                      <p className="text-xs text-gray-400">
-                        Date of Birth
-                      </p>
-                      <p className="mt-1 font-semibold text-slate-700">
-                        {formatDate(pet.dateOfBirth)}
-                      </p>
-                    </div>
-                  </div>
-
-                  {/* ALLERGIES */}
-                  <div className="mt-4 rounded-lg bg-gray-50 px-3 py-2.5">
-                    <p className="text-[10px] font-bold uppercase tracking-wide text-gray-400">
-                      Allergies
-                    </p>
-                    <p className="mt-1 text-xs font-medium text-slate-700">
-                      {pet.allergies || "No allergies added"}
-                    </p>
-                  </div>
-
-                  {/* PET ID SECTION */}
-                  {pet.petId ? (
-                    <div className="mt-4 rounded-xl border border-green-100 bg-green-50 p-4">
-                      {/* ID AND QR SIDE BY SIDE */}
-                      <div className="grid gap-4 sm:grid-cols-[minmax(0,1fr)_132px]">
-                        <div className="min-w-0">
-                          <p className="text-[10px] font-bold uppercase tracking-wide text-green-700">
-                            Permanent Pet ID
-                          </p>
-
-                          <p className="mt-1 break-all text-xl font-extrabold text-green-700">
-                            {pet.petId.petCode}
-                          </p>
-
-                          <span
-                            className={`mt-2 inline-block rounded-full px-2.5 py-1 text-[10px] font-bold ${getStatusStyle(
-                              pet.petId.status
-                            )}`}
-                          >
-                            {pet.petId.status}
-                          </span>
-
-                          {/* ACTIVATE PET ID */}
-                          {pet.petId.status === "UNCLAIMED" && (
-                            <div className="mt-4">
-                              <p className="text-sm font-bold text-orange-700">
-                                🔐 Activate Pet ID
-                              </p>
-
-                              <p className="mt-1 text-xs leading-5 text-gray-600">
-                                Verify ownership using OTP.
-                              </p>
-
-                              {activationPetId !== pet.id ? (
-                                <button
-                                  type="button"
-                                  onClick={() =>
-                                    openActivation(pet.id)
-                                  }
-                                  disabled={
-                                    sendingActivationOtp === pet.id
-                                  }
-                                  className="mt-3 rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold text-white hover:bg-orange-600 disabled:opacity-50"
-                                >
-                                  {sendingActivationOtp === pet.id
-                                    ? "Sending OTP..."
-                                    : "Activate Pet ID"}
-                                </button>
-                              ) : (
-                                <div className="mt-3 space-y-2">
-                                  <label
-                                    htmlFor={`otp-${pet.id}`}
-                                    className="block text-xs font-bold text-orange-700"
-                                  >
-                                    Enter OTP
-                                  </label>
-
-                                  <input
-                                    id={`otp-${pet.id}`}
-                                    type="text"
-                                    inputMode="numeric"
-                                    maxLength={6}
-                                    value={otp}
-                                    onChange={(event) =>
-                                      setOtp(
-                                        event.target.value.replace(
-                                          /\D/g,
-                                          ""
-                                        )
-                                      )
-                                    }
-                                    placeholder="6-digit OTP"
-                                    className="w-full rounded-lg border border-orange-200 bg-white px-3 py-2 text-center text-sm font-bold tracking-widest outline-none focus:border-orange-500"
-                                  />
-
-                                  {demoActivationOtp && (
-                                    <div className="rounded-lg bg-yellow-50 p-2 text-xs text-yellow-700">
-                                      Development OTP:{" "}
-                                      <strong>
-                                        {demoActivationOtp}
-                                      </strong>
-                                    </div>
-                                  )}
-
-                                  <button
-                                    type="button"
-                                    onClick={() =>
-                                      activatePetId(pet.id)
-                                    }
-                                    disabled={
-                                      activatingPetId === pet.id
-                                    }
-                                    className="w-full rounded-lg bg-green-600 px-3 py-2 text-xs font-bold text-white hover:bg-green-700 disabled:opacity-50"
-                                  >
-                                    {activatingPetId === pet.id
-                                      ? "Activating..."
-                                      : "Verify & Activate"}
-                                  </button>
-
-                                  <button
-                                    type="button"
-                                    onClick={cancelActivation}
-                                    disabled={
-                                      activatingPetId === pet.id
-                                    }
-                                    className="w-full rounded-lg border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-600 hover:bg-gray-50"
-                                  >
-                                    Cancel
-                                  </button>
-                                </div>
-                              )}
-                            </div>
-                          )}
-
-                          {/* ACTIVE STATUS */}
-                          {pet.petId.status === "ACTIVE" && (
-                            <div className="mt-4">
-                              <p className="text-sm font-bold text-green-700">
-                                ✅ Pet ID Active
-                              </p>
-                              <p className="mt-1 text-xs text-gray-600">
-                                This Pet ID has been successfully activated.
-                              </p>
-                            </div>
-                          )}
-                        </div>
-
-                        {/* COMPACT QR CODE */}
-                        <div className="flex flex-col items-center rounded-lg bg-white p-2.5">
-                          <p className="text-[10px] font-bold uppercase tracking-wide text-gray-500">
-                            Pet ID QR
-                          </p>
-
-                          <img
-                            src={`/api/pets/${pet.id}/qr`}
-                            alt={`QR code for ${pet.name}`}
-                            className="mt-2 h-28 w-28 object-contain"
-                          />
-
-                          <a
-                            href={`/api/pets/${pet.id}/qr`}
-                            target="_blank"
-                            rel="noopener noreferrer"
-                            className="mt-2 w-full rounded-md border border-green-200 px-2 py-2 text-center text-[10px] font-bold text-green-700 hover:bg-green-50"
-                          >
-                            Open QR Code
-                          </a>
-                        </div>
-                      </div>
-
-                      <p className="mt-3 text-center text-[10px] text-gray-500">
-                        Scan the QR to view {pet.name}&apos;s Pet ID.
-                        No private owner information is stored in the QR.
-                      </p>
-                    </div>
-                  ) : (
-                    <div className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-dashed border-orange-200 bg-orange-50 p-4">
-                      <div>
-                        <p className="text-sm font-bold text-orange-700">
-                          🪪 Pet ID not issued yet
-                        </p>
-                        <p className="mt-1 text-xs text-orange-600">
-                          Issue a permanent Pet ID for {pet.name}.
-                        </p>
-                      </div>
-
-                      <button
-                        type="button"
-                        onClick={() => issuePetId(pet.id)}
-                        disabled={issuingPetId === pet.id}
-                        className="rounded-lg bg-orange-500 px-4 py-2 text-xs font-bold text-white hover:bg-orange-600 disabled:opacity-50"
-                      >
-                        {issuingPetId === pet.id
-                          ? "Issuing ID..."
-                          : "Issue Pet ID"}
-                      </button>
-                    </div>
-                  )}
-                </div>
-              </article>
-            ))}
-          </div>
-        )}
-      </section>
+      {/* CELEBRATION POPUP */}
+      {celebration && (
+        <CelebrationPopup
+          celebration={celebration}
+          onClose={() => setCelebration(null)}
+        />
+      )}
     </main>
   );
 }
