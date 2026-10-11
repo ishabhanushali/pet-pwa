@@ -1,7 +1,7 @@
 
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useRef } from "react";
 import Link from "next/link";
 
 const categories = [
@@ -21,18 +21,6 @@ const categories = [
     name: "Treats",
     icon: "🦴",
     color: "#FFE8D8",
-    href: "/shop",
-  },
-  {
-    name: "Dog Toys",
-    icon: "🎾",
-    color: "#E9F6DF",
-    href: "/shop",
-  },
-  {
-    name: "Cat Toys",
-    icon: "🧶",
-    color: "#FFE9EE",
     href: "/shop",
   },
   {
@@ -58,114 +46,73 @@ const categories = [
 export default function CategoryCarousel() {
   const scrollRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
-    const timer = window.setInterval(() => {
-      const container = scrollRef.current;
-      if (!container) return;
+  const scroll = (direction: "left" | "right") => {
+    if (!scrollRef.current) return;
 
-      const firstCard =
-        container.querySelector<HTMLElement>(
-          "[data-category-card]"
-        );
-
-      if (!firstCard) return;
-
-      const gap = 20;
-      const step = firstCard.offsetWidth + gap;
-
-      const maxScroll =
-        container.scrollWidth - container.clientWidth;
-
-      if (maxScroll <= 0) return;
-
-      if (container.scrollLeft >= maxScroll - 5) {
-        container.scrollTo({
-          left: 0,
-          behavior: "smooth",
-        });
-      } else {
-        container.scrollBy({
-          left: step,
-          behavior: "smooth",
-        });
-      }
-    }, 2500);
-
-    return () => window.clearInterval(timer);
-  }, []);
-
-  function move(direction: "left" | "right") {
-    const container = scrollRef.current;
-    if (!container) return;
-
-    const firstCard =
-      container.querySelector<HTMLElement>(
-        "[data-category-card]"
-      );
-
-    const step = (firstCard?.offsetWidth ?? 150) + 20;
-
-    container.scrollBy({
-      left: direction === "left" ? -step : step,
+    scrollRef.current.scrollBy({
+      left: direction === "left" ? -220 : 220,
       behavior: "smooth",
     });
-  }
+  };
 
   return (
-    <section className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
-      <div className="mb-5 flex items-center justify-between gap-3">
-        <h2 className="text-xl font-black text-[#1D4033] sm:text-2xl">
-          Explore for Your Pet 🐾
-        </h2>
+    <section className="bg-[#FFFCF8] py-12 sm:py-14">
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
 
-        <div className="flex gap-2">
-          <button
-            type="button"
-            onClick={() => move("left")}
-            aria-label="Previous categories"
-            className="rounded-full border border-[#E9D4D7] bg-white px-3 py-2 font-bold text-[#205D43] shadow-sm"
-          >
-            ←
-          </button>
+        {/* HEADING AND ARROWS */}
+        <div className="mb-8 flex items-center justify-between gap-4">
+          <h2 className="text-2xl font-black text-[#194532] sm:text-3xl">
+            Explore for Your Pet 🐾
+          </h2>
 
-          <button
-            type="button"
-            onClick={() => move("right")}
-            aria-label="Next categories"
-            className="rounded-full border border-[#E9D4D7] bg-white px-3 py-2 font-bold text-[#205D43] shadow-sm"
-          >
-            →
-          </button>
+          {/* Arrows visible only on smaller screens */}
+          <div className="flex items-center gap-3 lg:hidden">
+            <button
+              type="button"
+              onClick={() => scroll("left")}
+              aria-label="Scroll categories left"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-[#F3D2D5] bg-white text-[#205D43] shadow-sm"
+            >
+              ←
+            </button>
+
+            <button
+              type="button"
+              onClick={() => scroll("right")}
+              aria-label="Scroll categories right"
+              className="flex h-11 w-11 items-center justify-center rounded-full border border-[#F3D2D5] bg-white text-[#205D43] shadow-sm"
+            >
+              →
+            </button>
+          </div>
         </div>
-      </div>
 
-      <div
-        ref={scrollRef}
-        className="flex snap-x snap-mandatory gap-5 overflow-x-auto scroll-smooth pb-4 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
-      >
-        {categories.map((category) => (
-          <Link
-            key={category.name}
-            href={category.href}
-            data-category-card
-            className="group flex w-28 shrink-0 snap-start flex-col items-center gap-3 text-center sm:w-36"
-          >
-            <div className="flex aspect-square w-full items-center justify-center rounded-full border-[3px] border-[#ECA2A8] p-1 shadow-sm transition group-hover:-translate-y-1 group-hover:shadow-md">
-              <div
-                className="flex h-full w-full items-center justify-center rounded-full text-4xl sm:text-5xl"
-                style={{
-                  backgroundColor: category.color,
-                }}
-              >
-                {category.icon}
+        {/* CATEGORY CIRCLES */}
+        <div
+          ref={scrollRef}
+          className="flex gap-5 overflow-x-auto scroll-smooth pb-3 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden sm:gap-7 lg:justify-center lg:gap-8 lg:overflow-visible"
+        >
+          {categories.map((category) => (
+            <Link
+              key={category.name}
+              href={category.href}
+              className="group flex w-[145px] shrink-0 flex-col items-center text-center sm:w-[160px] lg:w-[170px]"
+            >
+              <div className="flex aspect-square w-full items-center justify-center rounded-full border-[3px] border-[#F5A4AF] bg-white p-[5px] shadow-sm transition-transform duration-300 group-hover:-translate-y-2">
+                <div
+                  className="flex h-full w-full items-center justify-center rounded-full text-5xl"
+                  style={{ backgroundColor: category.color }}
+                >
+                  {category.icon}
+                </div>
               </div>
-            </div>
 
-            <span className="text-xs font-extrabold text-[#1D4033] sm:text-sm">
-              {category.name}
-            </span>
-          </Link>
-        ))}
+              <p className="mt-4 whitespace-nowrap text-base font-black text-[#194532] sm:text-lg">
+                {category.name}
+              </p>
+            </Link>
+          ))}
+        </div>
       </div>
     </section>
   );
