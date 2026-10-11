@@ -7,11 +7,12 @@ import {
   useSearchParams,
 } from "next/navigation";
 import {
-  FormEvent,
   Suspense,
   useState,
+  type FormEvent,
 } from "react";
 
+// Prevent unsafe redirects
 function getSafeNext(value: string | null) {
   if (
     !value ||
@@ -25,27 +26,6 @@ function getSafeNext(value: string | null) {
 
   return value;
 }
-
-// LOGIN MESSAGES FOR DIFFERENT PAGES
-const loginMessages: Record<string, string> = {
-  "/checkout":
-    "🛒 Login to continue to checkout. Your cart items will be waiting for you.",
-
-  "/pets":
-    "🐶 Login to manage your pets, Pet IDs and QR codes.",
-
-  "/orders":
-    "📦 Login to view your orders, track deliveries and reorder your favourite pet essentials.",
-
-  "/rewards":
-    "🐾 Login to explore your Paw Points, track your rewards and enjoy exciting benefits for your furry friends.",
-
-  "/profile":
-    "👤 Login to manage your profile, save delivery addresses and keep your personal details up to date.",
-
-     "/reminders":
-    "🔔 Login to create pet care reminders, manage feeding schedules, medicines, vaccinations and upcoming appointments.",
-};
 
 function LoginContent() {
   const router = useRouter();
@@ -62,6 +42,8 @@ function LoginContent() {
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] =
+    useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -69,9 +51,8 @@ function LoginContent() {
     event: FormEvent<HTMLFormElement>
   ) {
     event.preventDefault();
-
-    setLoading(true);
     setError("");
+    setLoading(true);
 
     try {
       const response = await fetch(
@@ -100,12 +81,11 @@ function LoginContent() {
         return;
       }
 
-      // Return to the original page after login
+      // Redirect to original page after login
       router.replace(nextPath);
       router.refresh();
     } catch (err) {
       console.error("Login error:", err);
-
       setError(
         "Something went wrong. Please try again."
       );
@@ -115,68 +95,55 @@ function LoginContent() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-slate-100">
-      {/* HEADER */}
-      <header className="bg-slate-900 text-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+    <main className="min-h-screen bg-[#FFFCF7] text-[#245C46]">
+      {/* TOP BAR */}
+      <div className="bg-[#245C46] px-4 py-2 text-center text-xs font-semibold text-white">
+        🐾 Little paws, big love! 💚
+      </div>
+
+      {/* NAVBAR */}
+      <nav className="border-b border-[#E5EDE2] bg-white">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
           <Link
             href="/"
-            className="flex items-center gap-3"
+            className="flex items-center gap-2"
           >
-            <span className="text-4xl">🐾</span>
-
-            <div>
-              <h1 className="text-xl font-bold">
-                Pet PWA
-              </h1>
-
-              <p className="text-xs text-slate-300">
-                Shop • Pet ID • Rewards
-              </p>
-            </div>
+            <span className="text-3xl">🐾</span>
+            <span className="text-xl font-black">
+              Pet PWA
+            </span>
           </Link>
 
           <Link
-            href={signupLink}
-            className="rounded-xl bg-orange-500 px-6 py-3 font-bold text-white transition hover:bg-orange-600"
+            href="/"
+            className="text-sm font-bold text-[#668071] hover:text-[#E98557]"
           >
-            Sign Up
+            ← Home
           </Link>
         </div>
-      </header>
+      </nav>
 
-      {/* LOGIN SECTION */}
-      <section
-        className="flex flex-1 items-center justify-center bg-cover bg-center px-5 py-16"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(15,23,42,0.40),rgba(15,23,42,0.40)),url('/images/pet-auth-bg.jpg')",
-        }}
-      >
-        <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl sm:p-10">
+      {/* LOGIN CARD */}
+      <section className="relative flex min-h-[calc(100vh-115px)] items-center justify-center overflow-hidden px-4 py-10">
+        {/* DECORATIONS */}
+        <div className="pointer-events-none absolute -left-20 top-12 h-52 w-52 rounded-full bg-[#EAF5E9]" />
+        <div className="pointer-events-none absolute -right-20 bottom-12 h-60 w-60 rounded-full bg-[#FFE9D9]" />
 
-          {/* TITLE */}
+        <div className="relative w-full max-w-md rounded-[30px] border border-[#E5EDE2] bg-white p-7 shadow-xl shadow-[#245C46]/5 sm:p-9">
+          {/* HEADER */}
           <div className="text-center">
-            <div className="text-5xl">🐾</div>
+            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[#FFF0E4] text-6xl">
+              🐶
+            </div>
 
-            <h2 className="mt-4 text-3xl font-bold text-slate-900">
-              Welcome Back!
-            </h2>
+            <h1 className="mt-5 text-3xl font-black">
+              Welcome Back! 💚
+            </h1>
 
-            <p className="mt-2 text-gray-500">
-              Login to your Pet PWA account
+            <p className="mt-2 text-sm text-[#708476]">
+              Your furry friends missed you!
             </p>
           </div>
-
-          {/* CONTEXT-SPECIFIC LOGIN MESSAGE */}
-          {loginMessages[nextPath] && (
-            <div
-              role="status"
-              className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-center text-sm font-medium leading-6 text-red-600"
-            >
-              {loginMessages[nextPath]}
-            </div>
-          )}
 
           {/* LOGIN FORM */}
           <form
@@ -187,9 +154,9 @@ function LoginContent() {
             <div>
               <label
                 htmlFor="login-email"
-                className="mb-2 block font-semibold text-slate-700"
+                className="text-sm font-bold"
               >
-                Email Address
+                ✉️ Email Address
               </label>
 
               <input
@@ -202,7 +169,7 @@ function LoginContent() {
                   setEmail(event.target.value)
                 }
                 placeholder="Enter your email"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3.5 text-slate-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                className="mt-2 w-full rounded-2xl border border-[#DCE8DA] bg-[#FAFCF8] px-4 py-3.5 outline-none focus:border-[#245C46] focus:ring-2 focus:ring-[#EAF5E9]"
               />
             </div>
 
@@ -210,117 +177,100 @@ function LoginContent() {
             <div>
               <label
                 htmlFor="login-password"
-                className="mb-2 block font-semibold text-slate-700"
+                className="text-sm font-bold"
               >
-                Password
+                🔒 Password
               </label>
 
-              <input
-                id="login-password"
-                type="password"
-                required
-                autoComplete="current-password"
-                value={password}
-                onChange={(event) =>
-                  setPassword(event.target.value)
-                }
-                placeholder="Enter your password"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3.5 text-slate-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-              />
+              <div className="relative mt-2">
+                <input
+                  id="login-password"
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
+                  required
+                  autoComplete="current-password"
+                  value={password}
+                  onChange={(event) =>
+                    setPassword(event.target.value)
+                  }
+                  placeholder="Enter your password"
+                  className="w-full rounded-2xl border border-[#DCE8DA] bg-[#FAFCF8] px-4 py-3.5 pr-20 outline-none focus:border-[#245C46] focus:ring-2 focus:ring-[#EAF5E9]"
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPassword(!showPassword)
+                  }
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-[#E98557]"
+                  aria-label={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
+                >
+                  {showPassword
+                    ? "Hide"
+                    : "Show"}
+                </button>
+              </div>
             </div>
 
-            {/* LOGIN ERROR */}
+            {/* ERROR */}
             {error && (
-              <div
+              <p
                 role="alert"
-                className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600"
+                className="rounded-xl bg-red-50 p-3 text-sm text-red-600"
               >
                 {error}
-              </div>
+              </p>
             )}
 
             {/* LOGIN BUTTON */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-orange-500 py-4 font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-full bg-[#245C46] py-4 font-extrabold text-white transition hover:bg-[#194633] disabled:opacity-60"
             >
               {loading
-                ? "Logging In..."
-                : "Login"}
+                ? "Logging in..."
+                : "🐾 Login"}
             </button>
           </form>
 
-          {/* SIGN UP LINK */}
-          <p className="mt-7 text-center text-gray-600">
-            Don&apos;t have an account?{" "}
+          {/* SIGNUP LINK */}
+          <p className="mt-6 text-center text-sm text-[#708476]">
+            New to Pet PWA?{" "}
             <Link
               href={signupLink}
-              className="font-bold text-orange-600 hover:underline"
+              className="font-extrabold text-[#E98557] hover:underline"
             >
               Sign Up
             </Link>
           </p>
+
+          <p className="mt-5 text-center text-xs text-[#A0ADA3]">
+            Made with 💚 for your furry friends
+          </p>
         </div>
       </section>
-
-      {/* FOOTER */}
-      <footer className="bg-slate-950 py-10 text-white">
-        <div className="mx-auto grid max-w-7xl gap-8 px-6 md:grid-cols-3">
-
-          <div>
-            <h3 className="text-xl font-bold">
-              🐾 Pet PWA
-            </h3>
-
-            <p className="mt-3 text-sm text-gray-400">
-              Better care for every pet.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="font-bold">
-              Quick Links
-            </h3>
-
-            <div className="mt-3 flex flex-col gap-2 text-sm text-gray-400">
-              <Link href="/">Home</Link>
-              <Link href="/shop">Shop</Link>
-              <Link href="/pets">My Pets</Link>
-              <Link href="/orders">My Orders</Link>
-              <Link href="/rewards">Paw Points</Link>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="font-bold">
-              Need Help?
-            </h3>
-
-            <div className="mt-3 flex flex-col gap-2 text-sm text-gray-400">
-              <Link href="/support">
-                Customer Support
-              </Link>
-
-              <Link href="/rewards">
-                Paw Points
-              </Link>
-            </div>
-          </div>
-
-        </div>
-      </footer>
     </main>
   );
 }
 
+// Suspense required for useSearchParams
 export default function LoginPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          Loading login page...
-        </div>
+        <main className="flex min-h-screen items-center justify-center bg-[#FFFCF7]">
+          <p className="font-bold text-[#245C46]">
+            🐾 Loading Login...
+          </p>
+        </main>
       }
     >
       <LoginContent />

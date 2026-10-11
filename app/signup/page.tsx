@@ -7,11 +7,12 @@ import {
   useSearchParams,
 } from "next/navigation";
 import {
-  FormEvent,
   Suspense,
   useState,
+  type FormEvent,
 } from "react";
 
+// Prevent unsafe redirects
 function getSafeNext(value: string | null) {
   if (
     !value ||
@@ -25,28 +26,6 @@ function getSafeNext(value: string | null) {
 
   return value;
 }
-
-// SIGNUP MESSAGES FOR DIFFERENT PAGES
-const signupMessages: Record<string, string> = {
-  "/checkout":
-    "🛒 Create your account to continue to checkout. Your cart items will be waiting for you.",
-
-  "/pets":
-    "🐶 Create your account to manage your pets, Pet IDs and QR codes.",
-
-  "/orders":
-    "📦 Create your account to view your orders, track deliveries and enjoy easy reordering.",
-
-  "/rewards":
-    "🐾 Create your account to unlock Paw Points, track your rewards and enjoy exciting benefits for your furry friends.",
-
-  "/profile":
-    "👤 Create your Pet PWA account to set up your profile, save delivery addresses and make caring for your pets easier.",
-
-     "/reminders":
-    "🔔 Create your Pet PWA account to set up pet care reminders and stay on top of feeding, medicines, vaccinations and vet visits.",
-    
-};
 
 function SignupContent() {
   const router = useRouter();
@@ -67,7 +46,8 @@ function SignupContent() {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] =
     useState("");
-
+  const [showPassword, setShowPassword] =
+    useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
@@ -82,16 +62,27 @@ function SignupContent() {
       return;
     }
 
-    if (!/^[6-9]\d{9}$/.test(mobile.trim())) {
+    if (
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        email.trim()
+      )
+    ) {
       setError(
-        "Please enter a valid 10-digit mobile number."
+        "Please enter a valid email address."
+      );
+      return;
+    }
+
+    if (!/^[6-9]\d{9}$/.test(mobile)) {
+      setError(
+        "Enter a valid 10-digit mobile number."
       );
       return;
     }
 
     if (password.length < 8) {
       setError(
-        "Password must contain at least 8 characters."
+        "Password must be at least 8 characters."
       );
       return;
     }
@@ -115,7 +106,7 @@ function SignupContent() {
           body: JSON.stringify({
             name: name.trim(),
             email: email.trim().toLowerCase(),
-            mobile: mobile.trim(),
+            mobile,
             password,
             confirmPassword,
           }),
@@ -133,12 +124,11 @@ function SignupContent() {
         return;
       }
 
-      // Return to the original page after signup.
+      // Redirect to original page after signup
       router.replace(nextPath);
       router.refresh();
     } catch (err) {
       console.error("Signup error:", err);
-
       setError(
         "Something went wrong. Please try again."
       );
@@ -148,96 +138,81 @@ function SignupContent() {
   }
 
   return (
-    <main className="flex min-h-screen flex-col bg-slate-100">
-      {/* HEADER */}
-      <header className="bg-slate-900 text-white">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+    <main className="min-h-screen bg-[#FFFCF7] text-[#245C46]">
+      {/* TOP BAR */}
+      <div className="bg-[#245C46] px-4 py-2 text-center text-xs font-semibold text-white">
+        🐾 Join our happy pet-loving family! 💚
+      </div>
+
+      {/* NAVBAR */}
+      <nav className="border-b border-[#E5EDE2] bg-white">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
           <Link
             href="/"
-            className="flex items-center gap-3"
+            className="flex items-center gap-2"
           >
-            <span className="text-4xl">🐾</span>
-
-            <div>
-              <h1 className="text-xl font-bold">
-                Pet PWA
-              </h1>
-
-              <p className="text-xs text-slate-300">
-                Shop • Pet ID • Rewards
-              </p>
-            </div>
+            <span className="text-3xl">🐾</span>
+            <span className="text-xl font-black">
+              Pet PWA
+            </span>
           </Link>
 
           <Link
-            href={loginLink}
-            className="rounded-xl bg-orange-500 px-6 py-3 font-bold text-white transition hover:bg-orange-600"
+            href="/"
+            className="text-sm font-bold text-[#668071] hover:text-[#E98557]"
           >
-            Login
+            ← Home
           </Link>
         </div>
-      </header>
+      </nav>
 
-      {/* SIGNUP SECTION */}
-      <section
-        className="flex flex-1 items-center justify-center bg-cover bg-center px-5 py-16"
-        style={{
-          backgroundImage:
-            "linear-gradient(rgba(15,23,42,0.40),rgba(15,23,42,0.40)),url('/images/pet-auth-bg.jpg')",
-        }}
-      >
-        <div className="w-full max-w-lg rounded-3xl bg-white p-8 shadow-2xl sm:p-10">
+      {/* SIGNUP CARD */}
+      <section className="relative flex min-h-[calc(100vh-115px)] items-center justify-center overflow-hidden px-4 py-10">
+        {/* DECORATIONS */}
+        <div className="pointer-events-none absolute -left-20 top-12 h-52 w-52 rounded-full bg-[#EAF5E9]" />
+        <div className="pointer-events-none absolute -right-20 bottom-12 h-60 w-60 rounded-full bg-[#FFE9D9]" />
 
-          {/* TITLE */}
+        <div className="relative w-full max-w-md rounded-[30px] border border-[#E5EDE2] bg-white p-7 shadow-xl shadow-[#245C46]/5 sm:p-9">
+          {/* HEADER */}
           <div className="text-center">
-            <div className="text-5xl">🐾</div>
+            <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full bg-[#EAF5E9] text-5xl">
+              🐶
+            </div>
 
-            <h2 className="mt-4 text-3xl font-bold text-slate-900">
-              Create Your Account
-            </h2>
+            <h1 className="mt-4 text-3xl font-black">
+              Join the Family! 🐾
+            </h1>
 
-            <p className="mt-2 text-gray-500">
-              Join Pet PWA and give your pets
-              the care they deserve.
+            <p className="mt-2 text-sm text-[#708476]">
+              A happy little world for your pets
             </p>
           </div>
-
-          {/* CONTEXT-SPECIFIC SIGNUP MESSAGE */}
-          {signupMessages[nextPath] && (
-            <div
-              role="status"
-              className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-center text-sm font-medium leading-6 text-red-600"
-            >
-              {signupMessages[nextPath]}
-            </div>
-          )}
 
           {/* SIGNUP FORM */}
           <form
             onSubmit={handleSignup}
-            className="mt-8 space-y-5"
+            className="mt-7 space-y-4"
           >
             {/* NAME */}
             <div>
               <label
                 htmlFor="signup-name"
-                className="mb-2 block font-semibold text-slate-700"
+                className="text-sm font-bold"
               >
-                Full Name
+                👤 Full Name
               </label>
 
               <input
                 id="signup-name"
                 type="text"
                 required
-                minLength={2}
                 autoComplete="name"
                 value={name}
                 onChange={(event) =>
                   setName(event.target.value)
                 }
-                placeholder="Enter your full name"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3.5 text-slate-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                placeholder="Your full name"
+                className="mt-2 w-full rounded-2xl border border-[#DCE8DA] bg-[#FAFCF8] px-4 py-3 outline-none focus:border-[#245C46] focus:ring-2 focus:ring-[#EAF5E9]"
               />
             </div>
 
@@ -245,9 +220,9 @@ function SignupContent() {
             <div>
               <label
                 htmlFor="signup-email"
-                className="mb-2 block font-semibold text-slate-700"
+                className="text-sm font-bold"
               >
-                Email Address
+                ✉️ Email Address
               </label>
 
               <input
@@ -259,8 +234,8 @@ function SignupContent() {
                 onChange={(event) =>
                   setEmail(event.target.value)
                 }
-                placeholder="Enter your email"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3.5 text-slate-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                placeholder="Your email"
+                className="mt-2 w-full rounded-2xl border border-[#DCE8DA] bg-[#FAFCF8] px-4 py-3 outline-none focus:border-[#245C46] focus:ring-2 focus:ring-[#EAF5E9]"
               />
             </div>
 
@@ -268,68 +243,100 @@ function SignupContent() {
             <div>
               <label
                 htmlFor="signup-mobile"
-                className="mb-2 block font-semibold text-slate-700"
+                className="text-sm font-bold"
               >
-                Mobile Number
+                📱 Mobile Number
               </label>
 
-              <input
-                id="signup-mobile"
-                type="tel"
-                required
-                maxLength={10}
-                inputMode="numeric"
-                autoComplete="tel-national"
-                value={mobile}
-                onChange={(event) =>
-                  setMobile(
-                    event.target.value.replace(
-                      /\D/g,
-                      ""
+              <div className="mt-2 flex overflow-hidden rounded-2xl border border-[#DCE8DA] bg-[#FAFCF8] focus-within:border-[#245C46]">
+                <span className="flex items-center border-r border-[#DCE8DA] px-4 text-sm font-bold">
+                  +91
+                </span>
+
+                <input
+                  id="signup-mobile"
+                  type="tel"
+                  required
+                  maxLength={10}
+                  inputMode="numeric"
+                  value={mobile}
+                  onChange={(event) =>
+                    setMobile(
+                      event.target.value.replace(
+                        /\D/g,
+                        ""
+                      )
                     )
-                  )
-                }
-                placeholder="Enter 10-digit mobile number"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3.5 text-slate-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-              />
+                  }
+                  placeholder="10-digit mobile number"
+                  className="w-full min-w-0 px-4 py-3 outline-none"
+                />
+              </div>
             </div>
 
             {/* PASSWORD */}
             <div>
               <label
                 htmlFor="signup-password"
-                className="mb-2 block font-semibold text-slate-700"
+                className="text-sm font-bold"
               >
-                Password
+                🔒 Password
               </label>
 
-              <input
-                id="signup-password"
-                type="password"
-                required
-                minLength={8}
-                autoComplete="new-password"
-                value={password}
-                onChange={(event) =>
-                  setPassword(event.target.value)
-                }
-                placeholder="Create a password"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3.5 text-slate-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
-              />
+              <div className="relative mt-2">
+                <input
+                  id="signup-password"
+                  type={
+                    showPassword
+                      ? "text"
+                      : "password"
+                  }
+                  required
+                  minLength={8}
+                  autoComplete="new-password"
+                  value={password}
+                  onChange={(event) =>
+                    setPassword(event.target.value)
+                  }
+                  placeholder="At least 8 characters"
+                  className="w-full rounded-2xl border border-[#DCE8DA] bg-[#FAFCF8] px-4 py-3 pr-20 outline-none focus:border-[#245C46]"
+                />
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setShowPassword(!showPassword)
+                  }
+                  className="absolute right-4 top-1/2 -translate-y-1/2 text-xs font-bold text-[#E98557]"
+                  aria-label={
+                    showPassword
+                      ? "Hide password"
+                      : "Show password"
+                  }
+                >
+                  {showPassword
+                    ? "Hide"
+                    : "Show"}
+                </button>
+              </div>
             </div>
 
             {/* CONFIRM PASSWORD */}
             <div>
               <label
-                htmlFor="signup-confirm-password"
-                className="mb-2 block font-semibold text-slate-700"
+                htmlFor="signup-confirm"
+                className="text-sm font-bold"
               >
-                Confirm Password
+                🔐 Confirm Password
               </label>
 
               <input
-                id="signup-confirm-password"
-                type="password"
+                id="signup-confirm"
+                type={
+                  showPassword
+                    ? "text"
+                    : "password"
+                }
                 required
                 minLength={8}
                 autoComplete="new-password"
@@ -339,103 +346,63 @@ function SignupContent() {
                     event.target.value
                   )
                 }
-                placeholder="Confirm your password"
-                className="w-full rounded-xl border border-gray-300 px-4 py-3.5 text-slate-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                placeholder="Re-enter your password"
+                className="mt-2 w-full rounded-2xl border border-[#DCE8DA] bg-[#FAFCF8] px-4 py-3 outline-none focus:border-[#245C46] focus:ring-2 focus:ring-[#EAF5E9]"
               />
             </div>
 
-            {/* SIGNUP ERROR */}
+            {/* ERROR */}
             {error && (
-              <div
+              <p
                 role="alert"
-                className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600"
+                className="rounded-xl bg-red-50 p-3 text-sm text-red-600"
               >
                 {error}
-              </div>
+              </p>
             )}
 
             {/* SIGNUP BUTTON */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-orange-500 py-4 font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-full bg-[#245C46] py-4 font-extrabold text-white transition hover:bg-[#194633] disabled:opacity-60"
             >
               {loading
                 ? "Creating Account..."
-                : "Sign Up"}
+                : "🐾 Create Account"}
             </button>
           </form>
 
           {/* LOGIN LINK */}
-          <p className="mt-7 text-center text-gray-600">
+          <p className="mt-6 text-center text-sm text-[#708476]">
             Already have an account?{" "}
             <Link
               href={loginLink}
-              className="font-bold text-orange-600 hover:underline"
+              className="font-extrabold text-[#E98557] hover:underline"
             >
               Login
             </Link>
           </p>
+
+          <p className="mt-5 text-center text-xs text-[#A0ADA3]">
+            Made with 💚 for your furry friends
+          </p>
         </div>
       </section>
-
-      {/* FOOTER */}
-      <footer className="bg-slate-950 py-10 text-white">
-        <div className="mx-auto grid max-w-7xl gap-8 px-6 md:grid-cols-3">
-
-          <div>
-            <h3 className="text-xl font-bold">
-              🐾 Pet PWA
-            </h3>
-
-            <p className="mt-3 text-sm text-gray-400">
-              Better care for every pet.
-            </p>
-          </div>
-
-          <div>
-            <h3 className="font-bold">
-              Quick Links
-            </h3>
-
-            <div className="mt-3 flex flex-col gap-2 text-sm text-gray-400">
-              <Link href="/">Home</Link>
-              <Link href="/shop">Shop</Link>
-              <Link href="/pets">My Pets</Link>
-              <Link href="/orders">My Orders</Link>
-              <Link href="/rewards">Paw Points</Link>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="font-bold">
-              Need Help?
-            </h3>
-
-            <div className="mt-3 flex flex-col gap-2 text-sm text-gray-400">
-              <Link href="/support">
-                Customer Support
-              </Link>
-
-              <Link href="/rewards">
-                Paw Points
-              </Link>
-            </div>
-          </div>
-
-        </div>
-      </footer>
     </main>
   );
 }
 
+// Suspense required for useSearchParams
 export default function SignupPage() {
   return (
     <Suspense
       fallback={
-        <div className="flex min-h-screen items-center justify-center">
-          Loading signup page...
-        </div>
+        <main className="flex min-h-screen items-center justify-center bg-[#FFFCF7]">
+          <p className="font-bold text-[#245C46]">
+            🐾 Loading Signup...
+          </p>
+        </main>
       }
     >
       <SignupContent />

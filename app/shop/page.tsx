@@ -7,11 +7,20 @@ import { useCart } from "../../components/CartProvider";
 import type { Product } from "../../components/CartProvider";
 
 const categories = [
-  "All",
-  "Dog Food",
-  "Cat Food",
-  "Treats",
-  "Cat Litter",
+  { name: "All", emoji: "🐾" },
+  { name: "Dog Food", emoji: "🐶" },
+  { name: "Cat Food", emoji: "🐱" },
+  { name: "Treats", emoji: "🦴" },
+  { name: "Cat Litter", emoji: "🧺" },
+];
+
+const productColors = [
+  "bg-[#FFF0E4]",
+  "bg-[#EAF5E9]",
+  "bg-[#FFF4D9]",
+  "bg-[#F1EAF9]",
+  "bg-[#E7F4F5]",
+  "bg-[#FDEBF0]",
 ];
 
 type Customer = {
@@ -42,14 +51,13 @@ export default function ShopPage() {
     decreaseQuantity,
   } = useCart();
 
-  // LOAD CUSTOMER LOGIN STATE
+  // Load customer
   useEffect(() => {
     let active = true;
 
     async function loadCustomer() {
       try {
         const response = await fetch("/api/profile", {
-          method: "GET",
           credentials: "same-origin",
           cache: "no-store",
         });
@@ -60,10 +68,6 @@ export default function ShopPage() {
         }
 
         const data = await response.json();
-
-        // Support common API response formats:
-        // { customer: {...} }, { profile: {...} },
-        // or { id, name, ... }.
         const profile =
           data.customer ?? data.profile ?? data;
 
@@ -87,14 +91,14 @@ export default function ShopPage() {
       }
     }
 
-    loadCustomer();
+    void loadCustomer();
 
     return () => {
       active = false;
     };
   }, []);
 
-  // LOGOUT WITHOUT REDIRECTING
+  // Logout
   async function handleLogout() {
     if (loggingOut) return;
 
@@ -112,21 +116,19 @@ export default function ShopPage() {
         throw new Error("Logout failed");
       }
 
-      // Change navbar immediately.
-      // Stay on /shop.
       setCustomer(null);
     } catch (err) {
       console.error("Logout error:", err);
-      setLogoutError(
-        "Could not log out. Please try again."
-      );
+      setLogoutError("Could not log out. Please try again.");
     } finally {
       setLoggingOut(false);
     }
   }
 
-  // LOAD PRODUCTS
+  // Load products
   useEffect(() => {
+    let active = true;
+
     async function loadProducts() {
       try {
         setLoading(true);
@@ -139,31 +141,35 @@ export default function ShopPage() {
         }
 
         const data: Product[] = await response.json();
-        setProducts(data);
-      } catch (err) {
-        console.error(err);
 
-        setError(
-          "We could not load the products. Please try again."
-        );
+        if (active) setProducts(data);
+      } catch (err) {
+        console.error("Product loading error:", err);
+
+        if (active) {
+          setError(
+            "Oops! Our furry friends couldn't fetch the products. Please try again."
+          );
+        }
       } finally {
-        setLoading(false);
+        if (active) setLoading(false);
       }
     }
 
-    loadProducts();
+    void loadProducts();
+
+    return () => {
+      active = false;
+    };
   }, []);
 
-  // FILTER PRODUCTS
   const filteredProducts =
     selectedCategory === "All"
       ? products
       : products.filter(
-          (product) =>
-            product.category === selectedCategory
+          (product) => product.category === selectedCategory
         );
 
-  // GET CART QUANTITY
   function getQuantity(productId: number) {
     const item = cartItems.find(
       (cartItem) => cartItem.id === productId
@@ -172,7 +178,7 @@ export default function ShopPage() {
     return item?.quantity ?? 0;
   }
 
-  // RECORD ANALYTICS
+  // Analytics
   async function trackAnalytics(
     eventName: string,
     entityType?: string,
@@ -196,12 +202,10 @@ export default function ShopPage() {
         }),
       });
     } catch (err) {
-      // Analytics should not interrupt shopping.
       console.error("Analytics error:", err);
     }
   }
 
-  // ADD PRODUCT TO CART
   function handleAddToCart(product: Product) {
     addToCart(product);
 
@@ -216,116 +220,104 @@ export default function ShopPage() {
     );
   }
 
+  function scrollToProducts() {
+    document
+      .getElementById("shop-products")
+      ?.scrollIntoView({
+        behavior: "smooth",
+        block: "start",
+      });
+  }
+
+  const firstName =
+    customer?.name.trim().split(/\s+/)[0] || "";
+
   return (
-    <main className="min-h-screen bg-[#fafaf7]">
+    <main className="min-h-screen bg-[#FFFCF7] text-[#193D32]">
+      {/* ANNOUNCEMENT BAR */}
+      <div className="bg-[#245C46] px-4 py-2 text-center text-xs font-semibold tracking-wide text-white sm:text-sm">
+        🐾 Happy pets, happy hearts! Little joys delivered with love 💚
+      </div>
+
       {/* NAVBAR */}
-      <nav className="sticky top-0 z-50 border-b border-gray-200 bg-white">
+      <nav className="sticky top-0 z-50 border-b border-[#E9EDE5] bg-white/95 backdrop-blur-md">
         <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-4 sm:px-6">
-          {/* LOGO */}
-          <Link
-            href="/"
-            className="flex shrink-0 items-center gap-2"
-          >
+          <Link href="/" className="flex items-center gap-2">
             <span className="text-3xl">🐾</span>
 
             <div>
-              <h1 className="text-xl font-bold text-slate-900">
+              <h1 className="text-xl font-extrabold text-[#245C46]">
                 Pet PWA
               </h1>
-
-              <p className="text-xs text-gray-500">
+              <p className="text-xs text-[#819287]">
                 Shop • Pet ID • Rewards
               </p>
             </div>
           </Link>
 
-          {/* DESKTOP LINKS */}
-          <div className="hidden items-center gap-5 lg:flex">
-            <Link
-              href="/"
-              className="font-medium text-gray-600 hover:text-orange-600"
-            >
-              Home
-            </Link>
-
-            <Link
-              href="/shop"
-              className="font-semibold text-orange-600"
-            >
-              Shop
-            </Link>
-
-            <Link
-              href="/pets"
-              className="font-medium text-gray-600 hover:text-orange-600"
-            >
-              My Pets
-            </Link>
-
-            <Link
-              href="/orders"
-              className="font-medium text-gray-600 hover:text-orange-600"
-            >
-              Orders
-            </Link>
-
-            <Link
-              href="/rewards"
-              className="font-medium text-gray-600 hover:text-orange-600"
-            >
-              Rewards
-            </Link>
+          <div className="hidden items-center gap-6 lg:flex">
+            {[
+              { name: "Home", href: "/" },
+              { name: "Shop", href: "/shop" },
+              { name: "My Pets", href: "/pets" },
+              { name: "Orders", href: "/orders" },
+              { name: "Rewards", href: "/rewards" },
+            ].map((item) => (
+              <Link
+                key={item.href}
+                href={item.href}
+                className={`text-sm font-bold transition hover:text-[#E77B49] ${
+                  item.href === "/shop"
+                    ? "text-[#E77B49]"
+                    : "text-[#486357]"
+                }`}
+              >
+                {item.name}
+              </Link>
+            ))}
           </div>
 
-          {/* AUTH + CART */}
-          <div className="flex min-w-0 items-center gap-2 sm:gap-3">
+          <div className="flex items-center gap-2 sm:gap-3">
             {authLoading ? (
-              <span className="text-sm text-gray-400">
+              <span className="text-xs text-[#819287]">
                 Loading...
               </span>
             ) : customer ? (
               <>
-                {/* CUSTOMER PROFILE */}
                 <Link
                   href="/profile"
-                  className="max-w-36 truncate rounded-xl bg-orange-100 px-3 py-2 text-sm font-bold text-orange-700 sm:max-w-52 sm:px-4"
                   title={customer.name}
+                  className="max-w-32 truncate rounded-full bg-[#E8F5E9] px-3 py-2 text-xs font-bold text-[#245C46] sm:max-w-44 sm:px-4 sm:text-sm"
                 >
-                  👤 {customer.name}
+                  👋 Hi, {firstName}
                 </Link>
 
-                {/* LOGOUT */}
                 <button
                   type="button"
                   onClick={handleLogout}
                   disabled={loggingOut}
-                  className="rounded-xl border border-red-200 bg-white px-3 py-2 text-sm font-bold text-red-600 transition hover:bg-red-50 disabled:opacity-50 sm:px-4"
+                  className="rounded-full border border-[#F6D7CB] bg-white px-3 py-2 text-xs font-bold text-[#D46F4C] transition hover:bg-[#FFF0E9] disabled:opacity-50 sm:px-4 sm:text-sm"
                 >
-                  {loggingOut
-                    ? "Logging out..."
-                    : "Logout"}
+                  {loggingOut ? "..." : "Logout"}
                 </button>
               </>
             ) : (
-              /* LOGIN */
               <Link
                 href="/login?next=%2Fshop"
-                className="rounded-xl border border-gray-300 bg-white px-4 py-2 text-sm font-bold text-slate-700 transition hover:border-orange-300 hover:text-orange-600"
+                className="rounded-full bg-[#245C46] px-4 py-2 text-sm font-bold text-white"
               >
                 Login
               </Link>
             )}
 
-            {/* CART */}
             <Link
               href="/cart"
               aria-label={`Cart with ${cartCount} items`}
-              className="relative shrink-0 rounded-full bg-orange-50 px-4 py-2 text-xl"
+              className="relative rounded-full bg-[#FFF0E4] px-3 py-2 text-xl transition hover:scale-105"
             >
               🛒
-
               {cartCount > 0 && (
-                <span className="absolute -right-1 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-orange-500 px-1 text-xs font-bold text-white">
+                <span className="absolute -right-1 -top-2 flex h-5 min-w-5 items-center justify-center rounded-full bg-[#EF8756] px-1 text-xs font-bold text-white">
                   {cartCount}
                 </span>
               )}
@@ -333,129 +325,270 @@ export default function ShopPage() {
           </div>
         </div>
 
-        {/* SMALL SCREEN NAVIGATION */}
-        <div className="flex items-center justify-center gap-4 overflow-x-auto border-t border-gray-100 px-4 py-3 text-sm font-semibold text-gray-600 lg:hidden">
-          <Link href="/" className="shrink-0">
-            Home
-          </Link>
-          <Link
-            href="/shop"
-            className="shrink-0 text-orange-600"
-          >
-            Shop
-          </Link>
-          <Link href="/pets" className="shrink-0">
-            My Pets
-          </Link>
-          <Link href="/orders" className="shrink-0">
-            Orders
-          </Link>
-          <Link href="/rewards" className="shrink-0">
-            Rewards
-          </Link>
+        {/* MOBILE NAV */}
+        <div className="flex items-center justify-start gap-6 overflow-x-auto border-t border-[#F0F1EA] px-5 py-3 text-sm font-semibold lg:hidden">
+          {[
+            { name: "Home", href: "/" },
+            { name: "Shop", href: "/shop" },
+            { name: "My Pets", href: "/pets" },
+            { name: "Orders", href: "/orders" },
+            { name: "Rewards", href: "/rewards" },
+          ].map((item) => (
+            <Link
+              key={item.href}
+              href={item.href}
+              className={`shrink-0 ${
+                item.href === "/shop"
+                  ? "text-[#E77B49]"
+                  : "text-[#536A5D]"
+              }`}
+            >
+              {item.name}
+            </Link>
+          ))}
         </div>
 
         {logoutError && (
           <p
             role="alert"
-            className="px-6 pb-2 text-sm text-red-600"
+            className="px-6 pb-3 text-sm text-red-600"
           >
             {logoutError}
           </p>
         )}
       </nav>
 
-      {/* SHOP HEADER */}
-      <section className="bg-orange-50">
-        <div className="mx-auto max-w-7xl px-6 py-14">
-          <p className="font-semibold uppercase tracking-wide text-orange-600">
-            PET ESSENTIALS
-          </p>
+      {/* HERO */}
+      <section className="relative overflow-hidden bg-[#FFF5E9]">
+        <div className="pointer-events-none absolute -left-16 -top-16 h-56 w-56 rounded-full bg-[#FFE4CE] opacity-70" />
+        <div className="pointer-events-none absolute -bottom-20 right-0 h-64 w-64 rounded-full bg-[#E6F1DF] opacity-80" />
 
-          <h2 className="mt-2 text-4xl font-bold text-slate-900 md:text-5xl">
-            Shop for your best friend.
-          </h2>
+        <div className="relative mx-auto grid max-w-7xl items-center gap-8 px-5 py-12 sm:px-8 md:grid-cols-2 md:py-16 lg:py-20">
+          <div className="relative z-10">
+            <span className="inline-flex items-center gap-2 rounded-full border border-[#F9DCC7] bg-white px-4 py-2 text-xs font-extrabold tracking-wide text-[#DC7A49]">
+              🐾 THE HAPPY PAWS SHOP
+            </span>
 
-          <p className="mt-4 max-w-2xl text-gray-600">
-            Food, treats and everyday essentials for
-            happy and healthy pets.
-          </p>
+            <h2 className="mt-6 max-w-xl text-4xl font-black leading-tight tracking-tight text-[#20513F] sm:text-5xl lg:text-6xl">
+              Little treats,
+              <br />
+              <span className="text-[#E98557]">
+                big tail wags!
+              </span>
+            </h2>
+
+            <p className="mt-5 max-w-lg text-base leading-8 text-[#64796B] sm:text-lg">
+              From yummy bites to everyday essentials,
+              find everything your furry bestie loves.
+              Because every paw deserves a little extra
+              happiness!
+            </p>
+
+            <div className="mt-7 flex flex-wrap items-center gap-3">
+              <button
+                type="button"
+                onClick={scrollToProducts}
+                className="rounded-full bg-[#245C46] px-7 py-3.5 text-sm font-extrabold text-white shadow-md transition hover:-translate-y-1 hover:bg-[#194633]"
+              >
+                Shop the Goodies 🛍️
+              </button>
+
+              <Link
+                href="/pets"
+                className="rounded-full border border-[#D5E6D5] bg-white px-6 py-3.5 text-sm font-bold text-[#245C46] transition hover:bg-[#EAF5E9]"
+              >
+                Meet My Pets 🐶
+              </Link>
+            </div>
+
+            <div className="mt-8 flex flex-wrap gap-4 text-xs font-semibold text-[#64806E] sm:text-sm">
+              <span>💚 Made for pet lovers</span>
+              <span>🎁 Little surprises</span>
+              <span>🐾 Lots of love</span>
+            </div>
+          </div>
+
+          {/* PLAYFUL HERO ILLUSTRATION */}
+          <div className="relative mx-auto flex h-72 w-full max-w-md items-center justify-center sm:h-96">
+            <div className="absolute h-64 w-64 rounded-full bg-[#F8DFC9] sm:h-80 sm:w-80" />
+            <div className="absolute right-5 top-5 h-24 w-24 rounded-full bg-[#E2F0DD]" />
+            <div className="absolute bottom-4 left-4 h-20 w-20 rounded-full bg-[#FFF9D8]" />
+
+            <span className="absolute left-8 top-7 rotate-[-15deg] text-4xl">
+              🦴
+            </span>
+            <span className="absolute right-7 top-16 rotate-12 text-4xl">
+              🐟
+            </span>
+            <span className="absolute bottom-8 right-9 text-4xl">
+              🐾
+            </span>
+
+            <div className="relative flex items-end justify-center gap-1 drop-shadow-xl">
+              <span className="text-[105px] leading-none sm:text-[140px]">
+                🐶
+              </span>
+              <span className="text-[90px] leading-none sm:text-[120px]">
+                🐱
+              </span>
+            </div>
+
+            <div className="absolute bottom-3 left-1/2 -translate-x-1/2 rotate-[-4deg] whitespace-nowrap rounded-2xl bg-white px-5 py-3 text-sm font-extrabold text-[#245C46] shadow-lg">
+              ✨ Your pet's happy place!
+            </div>
+          </div>
         </div>
       </section>
 
-      {/* SHOP CONTENT */}
-      <section className="mx-auto max-w-7xl px-6 py-12">
-        {/* CATEGORY BUTTONS */}
-        <div className="mb-10 flex flex-wrap gap-3">
-          {categories.map((category) => (
-            <button
-              key={category}
-              type="button"
-              onClick={() =>
-                setSelectedCategory(category)
-              }
-              className={`rounded-full px-5 py-2.5 text-sm font-semibold transition ${
-                selectedCategory === category
-                  ? "bg-orange-500 text-white"
-                  : "border border-gray-200 bg-white text-gray-700 hover:border-orange-300 hover:text-orange-600"
-              }`}
+      {/* MINI BENEFITS */}
+      <section className="mx-auto max-w-7xl px-5 pt-8 sm:px-8">
+        <div className="grid gap-3 sm:grid-cols-3">
+          {[
+            {
+              icon: "💚",
+              title: "Picked with love",
+              subtitle: "Happy little essentials",
+              bg: "bg-[#EAF5E9]",
+            },
+            {
+              icon: "🎁",
+              title: "Paw-some finds",
+              subtitle: "Treats worth wagging for",
+              bg: "bg-[#FFF0E4]",
+            },
+            {
+              icon: "🐾",
+              title: "For every furry friend",
+              subtitle: "Dogs, cats & cuddles",
+              bg: "bg-[#F3EDFA]",
+            },
+          ].map((item) => (
+            <div
+              key={item.title}
+              className={`flex items-center gap-4 rounded-3xl ${item.bg} px-5 py-4`}
             >
-              {category}
-            </button>
+              <span className="text-3xl">{item.icon}</span>
+              <div>
+                <p className="font-extrabold text-[#245C46]">
+                  {item.title}
+                </p>
+                <p className="mt-1 text-xs text-[#718478]">
+                  {item.subtitle}
+                </p>
+              </div>
+            </div>
           ))}
         </div>
+      </section>
 
-        {/* LOADING */}
+      {/* PRODUCTS */}
+      <section
+        id="shop-products"
+        className="mx-auto max-w-7xl scroll-mt-36 px-5 py-14 sm:px-8"
+      >
+        <div className="mb-8">
+          <p className="text-xs font-extrabold uppercase tracking-[0.2em] text-[#E98557]">
+            ✨ EXPLORE THE GOODIES
+          </p>
+
+          <h2 className="mt-2 text-3xl font-black text-[#245C46] sm:text-4xl">
+            Something for every paw 🐾
+          </h2>
+
+          <p className="mt-3 text-sm text-[#718478]">
+            Find their next favorite thing, one happy
+            little treat at a time.
+          </p>
+        </div>
+
+        {/* CATEGORY FILTERS */}
+        <div className="mb-8 flex flex-wrap gap-3">
+          {categories.map((category) => {
+            const active =
+              selectedCategory === category.name;
+
+            return (
+              <button
+                key={category.name}
+                type="button"
+                onClick={() =>
+                  setSelectedCategory(category.name)
+                }
+                aria-pressed={active}
+                className={`flex items-center gap-2 rounded-full border px-5 py-3 text-sm font-bold transition hover:-translate-y-0.5 ${
+                  active
+                    ? "border-[#245C46] bg-[#245C46] text-white shadow-md"
+                    : "border-[#E3EAE0] bg-white text-[#536C5D] hover:border-[#A9CCAE] hover:bg-[#EAF5E9]"
+                }`}
+              >
+                <span>{category.emoji}</span>
+                {category.name}
+              </button>
+            );
+          })}
+        </div>
+
         {loading && (
-          <div className="py-20 text-center">
-            <div className="text-5xl">🐾</div>
-            <p className="mt-4 font-semibold text-gray-600">
-              Loading products...
+          <div className="rounded-3xl bg-[#EAF5E9] py-20 text-center">
+            <div className="animate-bounce text-5xl">
+              🐾
+            </div>
+            <p className="mt-4 font-bold text-[#245C46]">
+              Fetching something paw-some...
             </p>
           </div>
         )}
 
-        {/* ERROR */}
         {!loading && error && (
-          <div className="rounded-2xl border border-red-200 bg-red-50 p-8 text-center">
-            <p className="font-semibold text-red-600">
-              {error}
-            </p>
+          <div
+            role="alert"
+            className="rounded-3xl border border-red-200 bg-red-50 p-8 text-center font-semibold text-red-600"
+          >
+            {error}
           </div>
         )}
 
-        {/* PRODUCTS */}
         {!loading && !error && (
           <>
-            <div className="mb-6 flex items-center justify-between">
-              <p className="text-sm text-gray-500">
+            <div className="mb-6 flex items-center justify-between gap-3">
+              <p className="text-sm text-[#718478]">
                 Showing{" "}
-                <span className="font-semibold text-slate-900">
+                <span className="font-extrabold text-[#245C46]">
                   {filteredProducts.length}
                 </span>{" "}
-                products
+                paw-some products
               </p>
+
+              <span className="hidden rounded-full bg-[#EAF5E9] px-4 py-2 text-xs font-bold text-[#245C46] sm:inline-block">
+                💚 Made for happy pets
+              </span>
             </div>
 
             {filteredProducts.length === 0 ? (
-              <div className="rounded-3xl border border-gray-200 bg-white px-6 py-16 text-center">
+              <div className="rounded-3xl border border-[#E3EAE0] bg-white px-6 py-16 text-center">
                 <div className="text-6xl">🐾</div>
-
-                <h3 className="mt-5 text-xl font-bold text-slate-900">
-                  No products found
+                <h3 className="mt-5 text-xl font-extrabold text-[#245C46]">
+                  No goodies found yet!
                 </h3>
-
-                <p className="mt-2 text-gray-500">
-                  There are currently no products
-                  in this category.
+                <p className="mt-2 text-[#718478]">
+                  Try another category to find more
+                  paw-some things.
                 </p>
+
+                <button
+                  type="button"
+                  onClick={() =>
+                    setSelectedCategory("All")
+                  }
+                  className="mt-6 rounded-full bg-[#245C46] px-6 py-3 font-bold text-white"
+                >
+                  View All Products
+                </button>
               </div>
             ) : (
-              <div className="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-                {filteredProducts.map((product) => {
-                  const quantity = getQuantity(
-                    product.id
-                  );
+              <div className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
+                {filteredProducts.map((product, index) => {
+                  const quantity = getQuantity(product.id);
 
                   const discount =
                     product.mrp > product.price
@@ -468,120 +601,132 @@ export default function ShopPage() {
                       : 0;
 
                   return (
-                    <div
+                    <article
                       key={product.id}
-                      className="overflow-hidden rounded-3xl border border-gray-200 bg-white transition hover:-translate-y-1 hover:shadow-lg"
+                      className="group flex h-full flex-col overflow-hidden rounded-[28px] border border-[#E6EAE2] bg-white shadow-sm transition duration-300 hover:-translate-y-1 hover:shadow-xl"
                     >
-                      {/* PRODUCT IMAGE */}
-                      <div className="relative flex h-52 items-center justify-center bg-orange-50 text-7xl">
-                        {product.image || "🐾"}
+                      {/* IMAGE / EMOJI */}
+                      <div
+                        className={`relative flex h-52 items-center justify-center overflow-hidden ${
+                          productColors[
+                            index % productColors.length
+                          ]
+                        }`}
+                      >
+                        <div className="absolute -right-8 -top-8 h-28 w-28 rounded-full border-[18px] border-white/30" />
+                        <div className="absolute -bottom-10 -left-8 h-28 w-28 rounded-full bg-white/20" />
+
+                        <span className="relative z-10 text-7xl transition duration-300 group-hover:scale-110">
+                          {product.image || "🐾"}
+                        </span>
 
                         {discount > 0 && (
-                          <span className="absolute left-4 top-4 rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">
-                            {discount}% OFF
+                          <span className="absolute left-4 top-4 rounded-full bg-[#D8F7E2] px-3 py-1.5 text-xs font-extrabold text-[#206E46]">
+                            ✨ {discount}% OFF
                           </span>
                         )}
 
                         {!product.inStock && (
-                          <span className="absolute right-4 top-4 rounded-full bg-red-100 px-3 py-1 text-xs font-bold text-red-600">
+                          <span className="absolute right-4 top-4 rounded-full bg-red-100 px-3 py-1.5 text-xs font-bold text-red-600">
                             Out of Stock
                           </span>
                         )}
                       </div>
 
-                      {/* PRODUCT INFORMATION */}
-                      <div className="p-5">
-                        <p className="text-xs font-bold uppercase tracking-wide text-orange-600">
+                      {/* PRODUCT DETAILS */}
+                      <div className="flex flex-1 flex-col p-5">
+                        <p className="text-xs font-extrabold uppercase tracking-wider text-[#E98557]">
                           {product.brand}
                         </p>
 
-                        <h3 className="mt-2 min-h-14 text-lg font-bold text-slate-900">
+                        <h3 className="mt-2 min-h-12 text-lg font-extrabold leading-snug text-[#245C46]">
                           {product.name}
                         </h3>
 
-                        <p className="mt-2 text-sm leading-6 text-gray-500">
+                        <p className="mt-2 line-clamp-2 min-h-12 text-sm leading-6 text-[#788B7D]">
                           {product.description}
                         </p>
 
                         <div className="mt-4">
-                          <span className="rounded-lg bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600">
-                            {product.packSize}
+                          <span className="inline-flex rounded-full bg-[#F3F6EF] px-3 py-1.5 text-xs font-bold text-[#64806E]">
+                            📦 {product.packSize}
                           </span>
                         </div>
 
-                        {/* PRICE */}
-                        <div className="mt-5 flex items-center gap-2">
-                          <span className="text-2xl font-bold text-slate-900">
-                            ₹{product.price}
-                          </span>
-
-                          {product.mrp > product.price && (
-                            <span className="text-sm text-gray-400 line-through">
-                              ₹{product.mrp}
+                        <div className="mt-auto pt-6">
+                          <div className="flex flex-wrap items-center gap-2">
+                            <span className="text-2xl font-black text-[#245C46]">
+                              ₹{product.price}
                             </span>
-                          )}
-                        </div>
 
-                        {/* CART CONTROLS */}
-                        <div className="mt-5">
-                          {!product.inStock ? (
-                            <button
-                              type="button"
-                              disabled
-                              className="w-full cursor-not-allowed rounded-xl bg-gray-200 px-4 py-3 font-bold text-gray-500"
-                            >
-                              Out of Stock
-                            </button>
-                          ) : quantity === 0 ? (
-                            <button
-                              type="button"
-                              onClick={() =>
-                                handleAddToCart(product)
-                              }
-                              className="w-full rounded-xl bg-orange-500 px-4 py-3 font-bold text-white transition hover:bg-orange-600"
-                            >
-                              Add to Cart
-                            </button>
-                          ) : (
-                            <div className="flex items-center justify-between rounded-xl border-2 border-orange-500">
+                            {product.mrp > product.price && (
+                              <span className="text-sm text-[#A1ACA3] line-through">
+                                ₹{product.mrp}
+                              </span>
+                            )}
+                          </div>
+
+                          <div className="mt-4">
+                            {!product.inStock ? (
+                              <button
+                                type="button"
+                                disabled
+                                className="w-full cursor-not-allowed rounded-2xl bg-gray-100 px-4 py-3 font-bold text-gray-400"
+                              >
+                                Currently Unavailable
+                              </button>
+                            ) : quantity === 0 ? (
                               <button
                                 type="button"
                                 onClick={() =>
-                                  decreaseQuantity(
-                                    product.id
-                                  )
+                                  handleAddToCart(product)
                                 }
-                                className="px-5 py-2.5 text-xl font-bold text-orange-600 hover:bg-orange-50"
+                                className="w-full rounded-2xl bg-[#245C46] px-4 py-3.5 text-sm font-extrabold text-white transition hover:bg-[#194633]"
                               >
-                                −
+                                🛒 Add to Cart
                               </button>
+                            ) : (
+                              <div className="flex items-center justify-between overflow-hidden rounded-2xl border-2 border-[#245C46] bg-[#F3FAF3]">
+                                <button
+                                  type="button"
+                                  aria-label={`Decrease ${product.name} quantity`}
+                                  onClick={() =>
+                                    decreaseQuantity(
+                                      product.id
+                                    )
+                                  }
+                                  className="px-5 py-3 text-xl font-black text-[#245C46] hover:bg-[#E3F2E3]"
+                                >
+                                  −
+                                </button>
 
-                              <div className="text-center">
-                                <p className="text-xs text-gray-400">
-                                  Quantity
-                                </p>
+                                <div className="text-center">
+                                  <p className="text-[10px] font-semibold text-[#788B7D]">
+                                    IN YOUR CART
+                                  </p>
+                                  <p className="font-black text-[#245C46]">
+                                    {quantity}
+                                  </p>
+                                </div>
 
-                                <p className="font-bold text-slate-900">
-                                  {quantity}
-                                </p>
+                                <button
+                                  type="button"
+                                  aria-label={`Increase ${product.name} quantity`}
+                                  onClick={() =>
+                                    increaseQuantity(
+                                      product.id
+                                    )
+                                  }
+                                  className="px-5 py-3 text-xl font-black text-[#245C46] hover:bg-[#E3F2E3]"
+                                >
+                                  +
+                                </button>
                               </div>
-
-                              <button
-                                type="button"
-                                onClick={() =>
-                                  increaseQuantity(
-                                    product.id
-                                  )
-                                }
-                                className="px-5 py-2.5 text-xl font-bold text-orange-600 hover:bg-orange-50"
-                              >
-                                +
-                              </button>
-                            </div>
-                          )}
+                            )}
+                          </div>
                         </div>
                       </div>
-                    </div>
+                    </article>
                   );
                 })}
               </div>
@@ -590,44 +735,52 @@ export default function ShopPage() {
         )}
       </section>
 
-      {/* SUPPORT */}
-      <section className="mx-auto max-w-7xl px-6 pb-14">
-        <div className="flex flex-col items-center justify-between gap-5 rounded-3xl bg-slate-900 p-8 text-white md:flex-row">
-          <div>
-            <h3 className="text-2xl font-bold">
-              Need help choosing?
-            </h3>
+      {/* SUPPORT BANNER */}
+      <section className="mx-auto max-w-7xl px-5 pb-14 sm:px-8">
+        <div className="relative overflow-hidden rounded-[32px] bg-[#E8F4E8] p-7 sm:p-10">
+          <div className="absolute -right-12 -top-16 h-48 w-48 rounded-full bg-[#D3EBD4]" />
 
-            <p className="mt-2 text-gray-300">
-              Contact us and we&apos;ll help you
-              find the right product for your pet.
-            </p>
+          <div className="relative flex flex-col items-start justify-between gap-6 md:flex-row md:items-center">
+            <div>
+              <p className="text-xs font-extrabold uppercase tracking-wider text-[#E98557]">
+                🐾 WE'RE HERE TO HELP
+              </p>
+
+              <h3 className="mt-2 text-2xl font-black text-[#245C46] sm:text-3xl">
+                Not sure what your pet needs?
+              </h3>
+
+              <p className="mt-3 max-w-xl text-sm leading-7 text-[#64806E]">
+                Every furry friend is special! Reach
+                out and we'll help you find the right
+                goodies for your little companion.
+              </p>
+            </div>
+
+            <Link
+              href="/support"
+              className="shrink-0 rounded-full bg-[#245C46] px-7 py-3.5 text-sm font-extrabold text-white transition hover:bg-[#194633]"
+            >
+              Let's Chat 💬
+            </Link>
           </div>
-
-          <Link
-            href="/support"
-            className="rounded-full bg-green-500 px-6 py-3 font-bold text-white hover:bg-green-600"
-          >
-            WhatsApp Support
-          </Link>
         </div>
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-slate-950 py-10 text-white">
-        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-6 px-6 md:flex-row">
+      <footer className="border-t border-[#E6EBE2] bg-[#F3F7EF] py-10">
+        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-5 px-6 md:flex-row md:items-center">
           <div>
-            <h3 className="text-xl font-bold">
+            <h3 className="text-xl font-black text-[#245C46]">
               🐾 Pet PWA
             </h3>
-
-            <p className="mt-2 text-sm text-gray-400">
-              Better care for every pet.
+            <p className="mt-2 text-sm text-[#718478]">
+              Little paws. Big love. Happy hearts.
             </p>
           </div>
 
-          <p className="text-sm text-gray-400">
-            © 2026 Pet PWA. All rights reserved.
+          <p className="text-sm text-[#819287]">
+            © 2026 Pet PWA. Made with 💚 for pets.
           </p>
         </div>
       </footer>

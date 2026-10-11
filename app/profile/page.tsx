@@ -21,7 +21,15 @@ type Address = {
   isDefault: boolean;
 };
 
-const emptyAddress = {
+type AddressForm = {
+  address: string;
+  landmark: string;
+  city: string;
+  state: string;
+  pincode: string;
+};
+
+const emptyAddress: AddressForm = {
   address: "",
   landmark: "",
   city: "",
@@ -29,59 +37,137 @@ const emptyAddress = {
   pincode: "",
 };
 
-function ProfileNavbar() {
-  return (
-    <nav className="border-b border-gray-200 bg-white">
-      <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-6 py-4">
-        <Link href="/" className="flex items-center gap-2">
-          <span className="text-3xl">🐾</span>
-          <div>
-            <h1 className="text-xl font-bold text-slate-900">
-              Pet PWA
-            </h1>
-            <p className="text-xs text-gray-500">
-              Shop • Pet ID • Rewards
-            </p>
-          </div>
-        </Link>
+const inputStyle =
+  "mt-2 w-full rounded-2xl border border-[#DCE8DA] bg-white px-4 py-3.5 text-[#245C46] outline-none transition focus:border-[#245C46] focus:ring-2 focus:ring-[#E3F1DF]";
 
-        <div className="flex flex-wrap gap-5">
-          <Link href="/shop" className="font-semibold text-gray-600 hover:text-orange-600">
-            Shop
-          </Link>
-          <Link href="/pets" className="font-semibold text-gray-600 hover:text-orange-600">
-            Pets
-          </Link>
-          <Link href="/orders" className="font-semibold text-gray-600 hover:text-orange-600">
-            Orders
-          </Link>
-          <Link href="/rewards" className="font-semibold text-gray-600 hover:text-orange-600">
-            Rewards
-          </Link>
-        </div>
+const navLinks = [
+  { label: "Home", href: "/" },
+  { label: "Shop", href: "/shop" },
+  { label: "My Pets", href: "/pets" },
+  { label: "Orders", href: "/orders" },
+  { label: "Rewards", href: "/rewards" },
+  { label: "Reminders", href: "/reminders" },
+  { label: "Support", href: "/support" },
+];
+
+function ProfileNavbar({
+  customerName,
+}: {
+  customerName?: string;
+}) {
+  const firstName =
+    customerName?.trim().split(/\s+/)[0] || "";
+
+  return (
+    <>
+      <div className="bg-[#245C46] px-4 py-2 text-center text-xs font-semibold text-white sm:text-sm">
+        🐾 Your happy pet care space starts here! 💚
       </div>
-    </nav>
+
+      <nav className="sticky top-0 z-50 border-b border-[#E7ECE5] bg-white/95 backdrop-blur-md">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-4 px-5 py-4">
+          <Link
+            href="/"
+            className="flex items-center gap-2"
+          >
+            <span className="text-3xl">🐾</span>
+
+            <div>
+              <h1 className="text-xl font-black text-[#245C46]">
+                Pet PWA
+              </h1>
+
+              <p className="text-xs text-[#819287]">
+                Shop • Pet ID • Rewards
+              </p>
+            </div>
+          </Link>
+
+          <div className="hidden items-center gap-5 lg:flex">
+            {navLinks.map((link) => (
+              <Link
+                key={link.href}
+                href={link.href}
+                className="text-sm font-bold text-[#486357] transition hover:text-[#E77B49]"
+              >
+                {link.label}
+              </Link>
+            ))}
+          </div>
+
+          <div className="flex items-center gap-3">
+            <Link
+              href="/profile"
+              className="rounded-full bg-[#E8F5E9] px-4 py-2 text-sm font-bold text-[#245C46]"
+            >
+              {firstName
+                ? `👋 Hi, ${firstName}`
+                : "👤 Profile"}
+            </Link>
+
+            <Link
+              href="/cart"
+              aria-label="Shopping cart"
+              className="rounded-full bg-[#FFF0E4] px-3 py-2 text-xl"
+            >
+              🛒
+            </Link>
+          </div>
+        </div>
+
+        <div className="flex gap-5 overflow-x-auto border-t border-[#F0F1EA] px-5 py-3 text-sm font-semibold lg:hidden">
+          {navLinks.map((link) => (
+            <Link
+              key={link.href}
+              href={link.href}
+              className="shrink-0 text-[#536A5D]"
+            >
+              {link.label}
+            </Link>
+          ))}
+        </div>
+      </nav>
+    </>
   );
 }
 
 export default function ProfilePage() {
-  const [customer, setCustomer] = useState<Customer | null>(null);
+  const [customer, setCustomer] =
+    useState<Customer | null>(null);
+
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
-  const [addresses, setAddresses] = useState<Address[]>([]);
 
-  const [showAddressForm, setShowAddressForm] = useState(false);
-  const [newAddress, setNewAddress] = useState({ ...emptyAddress });
+  const [addresses, setAddresses] =
+    useState<Address[]>([]);
+
+  const [showAddressForm, setShowAddressForm] =
+    useState(false);
+
+  const [newAddress, setNewAddress] =
+    useState<AddressForm>({ ...emptyAddress });
 
   const [loading, setLoading] = useState(true);
-  const [authRequired, setAuthRequired] = useState(false);
-  const [savingProfile, setSavingProfile] = useState(false);
-  const [savingAddress, setSavingAddress] = useState(false);
+  const [authRequired, setAuthRequired] =
+    useState(false);
 
-  const [profileMessage, setProfileMessage] = useState("");
-  const [profileError, setProfileError] = useState("");
-  const [addressMessage, setAddressMessage] = useState("");
-  const [addressError, setAddressError] = useState("");
+  const [savingProfile, setSavingProfile] =
+    useState(false);
+
+  const [savingAddress, setSavingAddress] =
+    useState(false);
+
+  const [profileMessage, setProfileMessage] =
+    useState("");
+
+  const [profileError, setProfileError] =
+    useState("");
+
+  const [addressMessage, setAddressMessage] =
+    useState("");
+
+  const [addressError, setAddressError] =
+    useState("");
 
   useEffect(() => {
     let active = true;
@@ -90,38 +176,51 @@ export default function ProfilePage() {
       try {
         setLoading(true);
 
-        const profileResponse = await fetch("/api/profile", {
-          cache: "no-store",
-          credentials: "same-origin",
-        });
+        const profileResponse = await fetch(
+          "/api/profile",
+          {
+            cache: "no-store",
+            credentials: "same-origin",
+          }
+        );
 
-        const profileData = await profileResponse.json();
+        const profileData =
+          await profileResponse.json();
 
         if (!active) return;
 
         const message = String(
-          profileData.message || profileData.error || ""
+          profileData.message ||
+            profileData.error ||
+            ""
         );
 
         if (
           profileResponse.status === 401 ||
           profileResponse.status === 403 ||
           (!profileResponse.ok &&
-            /login|log in|sign in|unauthori[sz]ed/i.test(message))
+            /login|log in|sign in|unauthori[sz]ed/i.test(
+              message
+            ))
         ) {
           setAuthRequired(true);
           return;
         }
 
         if (!profileResponse.ok) {
-          setProfileError(message || "Could not load profile.");
+          setProfileError(
+            message || "Could not load profile."
+          );
           return;
         }
 
-        const loadedCustomer = profileData.customer;
+        const loadedCustomer =
+          profileData.customer as Customer | undefined;
 
         if (!loadedCustomer) {
-          setProfileError("Customer profile was not returned.");
+          setProfileError(
+            "Customer profile was not returned."
+          );
           return;
         }
 
@@ -130,13 +229,17 @@ export default function ProfilePage() {
         setName(loadedCustomer.name);
         setEmail(loadedCustomer.email || "");
 
-        const addressResponse = await fetch("/api/addresses", {
-          cache: "no-store",
-          credentials: "same-origin",
-        });
+        const addressResponse = await fetch(
+          "/api/addresses",
+          {
+            cache: "no-store",
+            credentials: "same-origin",
+          }
+        );
 
         if (addressResponse.ok) {
-          const addressData = await addressResponse.json();
+          const addressData =
+            await addressResponse.json();
 
           if (active) {
             setAddresses(
@@ -147,14 +250,24 @@ export default function ProfilePage() {
           }
         }
       } catch (error) {
-        console.error("Profile loading error:", error);
-        if (active) setProfileError("Could not load profile.");
+        console.error(
+          "Profile loading error:",
+          error
+        );
+
+        if (active) {
+          setProfileError(
+            "Could not load profile."
+          );
+        }
       } finally {
-        if (active) setLoading(false);
+        if (active) {
+          setLoading(false);
+        }
       }
     }
 
-    loadData();
+    void loadData();
 
     return () => {
       active = false;
@@ -164,26 +277,53 @@ export default function ProfilePage() {
   async function saveProfile() {
     if (!customer) return;
 
+    setProfileMessage("");
+    setProfileError("");
+
+    if (name.trim().length < 2) {
+      setProfileError(
+        "Please enter your full name."
+      );
+      return;
+    }
+
+    if (
+      email.trim() &&
+      !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(
+        email.trim()
+      )
+    ) {
+      setProfileError(
+        "Please enter a valid email address."
+      );
+      return;
+    }
+
     try {
       setSavingProfile(true);
-      setProfileMessage("");
-      setProfileError("");
 
-      const response = await fetch("/api/profile", {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify({
-          name: name.trim(),
-          email: email.trim(),
-        }),
-      });
+      const response = await fetch(
+        "/api/profile",
+        {
+          method: "PUT",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            name: name.trim(),
+            email: email.trim(),
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
         setProfileError(
-          data.message || data.error || "Could not update profile."
+          data.message ||
+            data.error ||
+            "Could not update profile."
         );
         return;
       }
@@ -194,10 +334,14 @@ export default function ProfilePage() {
         setEmail(data.customer.email || "");
       }
 
-      setProfileMessage("Profile updated successfully.");
+      setProfileMessage(
+        "Your profile has been updated successfully! 💚"
+      );
     } catch (error) {
       console.error(error);
-      setProfileError("Could not update profile.");
+      setProfileError(
+        "Could not update profile."
+      );
     } finally {
       setSavingProfile(false);
     }
@@ -213,39 +357,56 @@ export default function ProfilePage() {
       !newAddress.state.trim() ||
       !/^\d{6}$/.test(newAddress.pincode)
     ) {
-      setAddressError("Please fill all required fields and enter a valid 6-digit PIN code.");
+      setAddressError(
+        "Please fill all required fields and enter a valid 6-digit PIN code."
+      );
       return;
     }
 
     try {
       setSavingAddress(true);
 
-      const response = await fetch("/api/addresses", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "same-origin",
-        body: JSON.stringify(newAddress),
-      });
+      const response = await fetch(
+        "/api/addresses",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "same-origin",
+          body: JSON.stringify(newAddress),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
         setAddressError(
-          data.message || data.error || "Could not add address."
+          data.message ||
+            data.error ||
+            "Could not add address."
         );
         return;
       }
 
       if (data.address) {
-        setAddresses((current) => [data.address, ...current]);
+        setAddresses((current) => [
+          data.address,
+          ...current,
+        ]);
       }
 
       setNewAddress({ ...emptyAddress });
       setShowAddressForm(false);
-      setAddressMessage("Address added successfully.");
+
+      setAddressMessage(
+        "Your delivery address has been added! 🏡"
+      );
     } catch (error) {
       console.error(error);
-      setAddressError("Could not add address.");
+      setAddressError(
+        "Could not add address."
+      );
     } finally {
       setSavingAddress(false);
     }
@@ -253,63 +414,65 @@ export default function ProfilePage() {
 
   if (loading) {
     return (
-      <main className="flex min-h-screen items-center justify-center bg-[#fafaf7]">
+      <main className="flex min-h-screen items-center justify-center bg-[#FFFCF7]">
         <div className="text-center">
-          <div className="text-6xl">🐾</div>
-          <p className="mt-4 font-semibold text-gray-600">
-            Loading your profile...
+          <div className="animate-bounce text-6xl">
+            🐾
+          </div>
+
+          <p className="mt-5 font-bold text-[#708476]">
+            Getting your happy space ready...
           </p>
         </div>
       </main>
     );
   }
 
-  // FRIENDLY LOGGED-OUT SCREEN
   if (authRequired) {
     return (
-      <main className="min-h-screen bg-[#fafaf7]">
+      <main className="min-h-screen bg-[#FFFCF7]">
         <ProfileNavbar />
 
         <section className="mx-auto max-w-3xl px-5 py-16">
-          <div className="rounded-3xl border border-orange-100 bg-white px-6 py-14 text-center shadow-sm sm:px-12">
-            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-orange-50 text-5xl">
-              👤
+          <div className="rounded-[32px] border border-[#E3EAE0] bg-white px-6 py-14 text-center shadow-sm sm:px-12">
+            <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[#FFF0E4] text-6xl">
+              🐶
             </div>
 
-            <h1 className="mt-7 text-3xl font-bold text-slate-900">
-              Your Pet PWA Profile Awaits!
-            </h1>
-
-            <p className="mx-auto mt-4 max-w-lg text-base leading-7 text-gray-600">
-              Sign in or create an account to manage your
-              personal details, save delivery addresses,
-              and keep everything you need for your pets
-              in one place.
+            <p className="mt-6 text-xs font-extrabold uppercase tracking-wider text-[#D97748]">
+              YOUR PERSONAL PET CARE SPACE
             </p>
 
-            <div className="mt-8 flex flex-col justify-center gap-4 sm:flex-row">
+            <h1 className="mt-3 text-3xl font-black text-[#245C46]">
+              Your Pet PWA profile awaits!
+            </h1>
+
+            <p className="mx-auto mt-4 max-w-lg leading-7 text-[#708476]">
+              Sign in to manage your personal
+              information, save delivery addresses
+              and keep everything for your furry
+              friends in one happy place.
+            </p>
+
+            <div className="mt-8 flex flex-wrap justify-center gap-3">
               <Link
                 href="/login?next=%2Fprofile"
-                className="rounded-xl bg-orange-500 px-8 py-3.5 font-bold text-white transition hover:bg-orange-600"
+                className="rounded-full bg-[#245C46] px-7 py-3.5 font-bold text-white"
               >
                 Login to Profile
               </Link>
 
               <Link
                 href="/signup?next=%2Fprofile"
-                className="rounded-xl border border-orange-500 bg-white px-8 py-3.5 font-bold text-orange-600 transition hover:bg-orange-50"
+                className="rounded-full border border-[#C9DEC9] bg-[#EAF5E9] px-7 py-3.5 font-bold text-[#245C46]"
               >
                 Create Account
               </Link>
             </div>
 
-            <p className="mt-7 text-sm text-gray-500">
-              🐾 Your personal pet care space is just a login away!
-            </p>
-
             <Link
               href="/"
-              className="mt-6 inline-block text-sm font-semibold text-orange-600 hover:underline"
+              className="mt-7 inline-block text-sm font-bold text-[#D97748]"
             >
               ← Back to Home
             </Link>
@@ -321,153 +484,292 @@ export default function ProfilePage() {
 
   if (!customer) {
     return (
-      <main className="min-h-screen bg-[#fafaf7]">
+      <main className="min-h-screen bg-[#FFFCF7]">
         <ProfileNavbar />
 
-        <div className="mx-auto max-w-lg px-6 py-20 text-center">
-          <div className="rounded-3xl border border-gray-200 bg-white p-8">
-            <div className="text-5xl">🐾</div>
-            <h1 className="mt-5 text-2xl font-bold text-slate-900">
-              Unable to Load Profile
+        <section className="mx-auto max-w-lg px-5 py-20">
+          <div className="rounded-[30px] border border-[#E3EAE0] bg-white p-9 text-center shadow-sm">
+            <div className="text-6xl">🐾</div>
+
+            <h1 className="mt-5 text-2xl font-black text-[#245C46]">
+              A little paw-blem!
             </h1>
-            <p className="mt-3 text-gray-500">
-              {profileError || "Please try again."}
+
+            <p className="mt-3 text-[#708476]">
+              {profileError ||
+                "We couldn't load your profile."}
             </p>
+
             <button
               type="button"
-              onClick={() => window.location.reload()}
-              className="mt-6 rounded-xl bg-orange-500 px-6 py-3 font-bold text-white"
+              onClick={() =>
+                window.location.reload()
+              }
+              className="mt-6 rounded-full bg-[#245C46] px-7 py-3 font-bold text-white"
             >
               Try Again
             </button>
           </div>
-        </div>
+        </section>
       </main>
     );
   }
 
+  const firstName =
+    customer.name.trim().split(/\s+/)[0];
+
   return (
-    <main className="min-h-screen bg-[#fafaf7]">
-      <ProfileNavbar />
+    <main className="min-h-screen bg-[#FFFCF7] text-[#245C46]">
+      <ProfileNavbar customerName={customer.name} />
 
-      <section className="mx-auto max-w-4xl px-6 py-12">
-        <div className="mb-8">
-          <p className="font-bold uppercase tracking-wide text-orange-600">
-            MY ACCOUNT
-          </p>
+      {/* HERO */}
+      <section className="relative overflow-hidden bg-[#FFF2E6]">
+        <div className="pointer-events-none absolute -left-16 -top-16 h-52 w-52 rounded-full bg-[#FFE0C9]" />
+        <div className="pointer-events-none absolute -bottom-20 right-0 h-64 w-64 rounded-full bg-[#E3F1DF]" />
 
-          <h1 className="mt-2 text-4xl font-bold text-slate-900">
-            My Profile
-          </h1>
+        <div className="relative mx-auto grid max-w-6xl items-center gap-6 px-5 py-12 sm:px-8 md:grid-cols-[1fr_auto] md:py-16">
+          <div>
+            <span className="inline-flex rounded-full bg-white px-4 py-2 text-xs font-extrabold tracking-wider text-[#D97748] shadow-sm">
+              🐾 YOUR HAPPY LITTLE SPACE
+            </span>
 
-          <p className="mt-2 text-gray-500">
-            Manage your personal information and delivery addresses.
-          </p>
+            <h1 className="mt-5 text-4xl font-black tracking-tight sm:text-5xl">
+              Hello,{" "}
+              <span className="text-[#E98557]">
+                {firstName}!
+              </span>{" "}
+              👋
+            </h1>
+
+            <p className="mt-4 max-w-xl text-base leading-7 text-[#688071]">
+              Welcome to your Pet PWA profile!
+              Manage your details, keep delivery
+              addresses handy, and make every
+              pet care moment a little easier. 💚
+            </p>
+
+            <a
+              href="#personal-information"
+              className="mt-6 inline-flex rounded-full bg-[#245C46] px-7 py-3 text-sm font-extrabold text-white transition hover:bg-[#194633]"
+            >
+              Manage My Profile ✨
+            </a>
+          </div>
+
+          <div
+            aria-hidden="true"
+            className="relative mx-auto flex h-40 w-52 items-center justify-center sm:h-48 sm:w-64"
+          >
+            <div className="absolute h-40 w-40 rounded-full bg-[#F9DFC9] sm:h-48 sm:w-48" />
+
+            <span className="relative text-7xl sm:text-8xl">
+              🐶
+            </span>
+
+            <span className="absolute -right-2 top-2 text-4xl">
+              🏡
+            </span>
+
+            <span className="absolute bottom-0 left-0 text-4xl">
+              🐾
+            </span>
+
+            <span className="absolute bottom-2 right-2 text-3xl">
+              ✨
+            </span>
+          </div>
+        </div>
+      </section>
+
+      <section className="mx-auto max-w-6xl px-5 py-12 sm:px-8">
+        {/* QUICK SUMMARY */}
+        <div className="mb-9 grid gap-4 sm:grid-cols-3">
+          <div className="rounded-[24px] bg-[#EAF5E9] p-5">
+            <span className="text-3xl">👤</span>
+
+            <p className="mt-3 text-sm font-bold text-[#66806C]">
+              My Account
+            </p>
+
+            <p className="mt-1 truncate text-lg font-black">
+              {customer.name}
+            </p>
+          </div>
+
+          <div className="rounded-[24px] bg-[#FFF0E4] p-5">
+            <span className="text-3xl">🏡</span>
+
+            <p className="mt-3 text-sm font-bold text-[#9A7866]">
+              Saved Addresses
+            </p>
+
+            <p className="mt-1 text-3xl font-black">
+              {addresses.length}
+            </p>
+          </div>
+
+          <div className="rounded-[24px] bg-[#F2EDFA] p-5">
+            <span className="text-3xl">💚</span>
+
+            <p className="mt-3 text-sm font-bold text-[#827295]">
+              Pet PWA Family
+            </p>
+
+            <p className="mt-1 text-lg font-black">
+              Happy Member
+            </p>
+          </div>
         </div>
 
         {/* PERSONAL INFORMATION */}
-        <div className="rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
-          <div className="flex items-center gap-4 border-b border-gray-100 pb-5">
-            <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-100 text-2xl">
-              👤
-            </div>
-
-            <div>
-              <h2 className="text-xl font-bold text-slate-900">
-                Personal Information
-              </h2>
-              <p className="text-sm text-gray-500">
-                Update your account details.
-              </p>
-            </div>
-          </div>
-
-          <div className="mt-6 grid gap-6 md:grid-cols-2">
-            <div>
-              <label htmlFor="profile-name" className="text-sm font-bold text-slate-700">
-                Full Name
-              </label>
-
-              <input
-                id="profile-name"
-                value={name}
-                onChange={(event) => setName(event.target.value)}
-                className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-orange-500"
-              />
-            </div>
-
-            <div>
-              <label htmlFor="profile-mobile" className="text-sm font-bold text-slate-700">
-                Mobile Number
-              </label>
-
-              <input
-                id="profile-mobile"
-                value={customer.mobile}
-                disabled
-                className="mt-2 w-full cursor-not-allowed rounded-xl border border-gray-200 bg-gray-100 px-4 py-3 text-gray-500"
-              />
-
-              <p className="mt-1 text-xs text-gray-400">
-                Mobile number cannot be changed here.
-              </p>
-            </div>
-
-            <div className="md:col-span-2">
-              <label htmlFor="profile-email" className="text-sm font-bold text-slate-700">
-                Email Address{" "}
-                <span className="font-normal text-gray-400">
-                  (Optional)
-                </span>
-              </label>
-
-              <input
-                id="profile-email"
-                type="email"
-                value={email}
-                onChange={(event) => setEmail(event.target.value)}
-                placeholder="example@email.com"
-                className="mt-2 w-full rounded-xl border border-gray-300 px-4 py-3 outline-none focus:border-orange-500"
-              />
-            </div>
-          </div>
-
-          {profileMessage && (
-            <div className="mt-5 rounded-xl bg-green-50 p-4 text-sm font-semibold text-green-700">
-              ✓ {profileMessage}
-            </div>
-          )}
-
-          {profileError && (
-            <div role="alert" className="mt-5 rounded-xl bg-red-50 p-4 text-sm font-semibold text-red-600">
-              {profileError}
-            </div>
-          )}
-
-          <button
-            type="button"
-            onClick={saveProfile}
-            disabled={savingProfile}
-            className="mt-6 rounded-xl bg-orange-500 px-7 py-3 font-bold text-white hover:bg-orange-600 disabled:opacity-60"
-          >
-            {savingProfile ? "Saving..." : "Save Changes"}
-          </button>
-        </div>
-
-        {/* DELIVERY ADDRESSES */}
-        <div className="mt-8 rounded-3xl border border-gray-200 bg-white p-7 shadow-sm">
-          <div className="flex flex-col justify-between gap-4 sm:flex-row sm:items-center">
+        <div
+          id="personal-information"
+          className="scroll-mt-32 overflow-hidden rounded-[30px] border border-[#E3EAE0] bg-white shadow-sm"
+        >
+          <div className="bg-[#EAF5E9] px-6 py-7 sm:px-8">
             <div className="flex items-center gap-4">
-              <div className="flex h-14 w-14 items-center justify-center rounded-full bg-orange-100 text-2xl">
-                📍
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-4xl">
+                👤
               </div>
 
               <div>
-                <h2 className="text-xl font-bold text-slate-900">
+                <p className="text-xs font-extrabold uppercase tracking-wider text-[#D97748]">
+                  YOUR DETAILS
+                </p>
+
+                <h2 className="mt-1 text-2xl font-black">
+                  Personal Information
+                </h2>
+
+                <p className="mt-1 text-sm text-[#708476]">
+                  Keep your account details up to date.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <div className="p-6 sm:p-8">
+            <div className="grid gap-6 md:grid-cols-2">
+              <div>
+                <label
+                  htmlFor="profile-name"
+                  className="text-sm font-extrabold"
+                >
+                  ✨ Full Name
+                </label>
+
+                <input
+                  id="profile-name"
+                  value={name}
+                  onChange={(event) =>
+                    setName(event.target.value)
+                  }
+                  maxLength={100}
+                  placeholder="Your full name"
+                  className={inputStyle}
+                />
+              </div>
+
+              <div>
+                <label
+                  htmlFor="profile-mobile"
+                  className="text-sm font-extrabold"
+                >
+                  📱 Mobile Number
+                </label>
+
+                <input
+                  id="profile-mobile"
+                  value={customer.mobile}
+                  disabled
+                  className="mt-2 w-full cursor-not-allowed rounded-2xl border border-[#E3EAE0] bg-[#F5F7F3] px-4 py-3.5 text-[#819287]"
+                />
+
+                <p className="mt-2 text-xs text-[#819287]">
+                  Your registered mobile number
+                  cannot be changed here.
+                </p>
+              </div>
+
+              <div className="md:col-span-2">
+                <label
+                  htmlFor="profile-email"
+                  className="text-sm font-extrabold"
+                >
+                  ✉️ Email Address
+                  <span className="ml-2 font-normal text-[#819287]">
+                    (Optional)
+                  </span>
+                </label>
+
+                <input
+                  id="profile-email"
+                  type="email"
+                  value={email}
+                  onChange={(event) =>
+                    setEmail(event.target.value)
+                  }
+                  placeholder="example@email.com"
+                  className={inputStyle}
+                />
+
+                <p className="mt-2 text-xs text-[#819287]">
+                  Keep your email updated for
+                  important account communications.
+                </p>
+              </div>
+            </div>
+
+            {profileMessage && (
+              <div
+                role="status"
+                className="mt-6 rounded-2xl bg-[#EAF5E9] p-4 text-sm font-bold text-[#245C46]"
+              >
+                ✓ {profileMessage}
+              </div>
+            )}
+
+            {profileError && (
+              <div
+                role="alert"
+                className="mt-6 rounded-2xl bg-red-50 p-4 text-sm font-bold text-red-600"
+              >
+                {profileError}
+              </div>
+            )}
+
+            <button
+              type="button"
+              onClick={saveProfile}
+              disabled={savingProfile}
+              className="mt-7 rounded-full bg-[#245C46] px-8 py-3.5 font-extrabold text-white transition hover:bg-[#194633] disabled:opacity-50"
+            >
+              {savingProfile
+                ? "Saving Changes..."
+                : "💚 Save My Changes"}
+            </button>
+          </div>
+        </div>
+
+        {/* DELIVERY ADDRESSES */}
+        <div className="mt-9 overflow-hidden rounded-[30px] border border-[#E3EAE0] bg-white shadow-sm">
+          <div className="flex flex-wrap items-center justify-between gap-4 bg-[#FFF0E4] px-6 py-7 sm:px-8">
+            <div className="flex items-center gap-4">
+              <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-white text-4xl">
+                🏡
+              </div>
+
+              <div>
+                <p className="text-xs font-extrabold uppercase tracking-wider text-[#D97748]">
+                  YOUR HAPPY PLACES
+                </p>
+
+                <h2 className="mt-1 text-2xl font-black">
                   My Addresses
                 </h2>
-                <p className="text-sm text-gray-500">
-                  Manage your delivery addresses.
+
+                <p className="mt-1 text-sm text-[#8B786C]">
+                  Keep your delivery addresses handy.
                 </p>
               </div>
             </div>
@@ -475,189 +777,313 @@ export default function ProfilePage() {
             <button
               type="button"
               onClick={() => {
-                setShowAddressForm(!showAddressForm);
+                setShowAddressForm(
+                  !showAddressForm
+                );
                 setAddressError("");
               }}
-              className="rounded-xl border border-orange-500 px-5 py-2.5 font-bold text-orange-600 hover:bg-orange-50"
+              className="rounded-full bg-[#245C46] px-6 py-3 text-sm font-extrabold text-white transition hover:bg-[#194633]"
             >
-              {showAddressForm ? "Cancel" : "+ Add Address"}
+              {showAddressForm
+                ? "✕ Cancel"
+                : "+ Add Address"}
             </button>
           </div>
 
-          {showAddressForm && (
-            <div className="mt-7 rounded-2xl bg-orange-50 p-6">
-              <h3 className="text-lg font-bold text-slate-900">
-                Add Delivery Address
-              </h3>
+          <div className="p-6 sm:p-8">
+            {showAddressForm && (
+              <div className="mb-7 rounded-[26px] border border-[#DCE8DA] bg-[#F4F9F1] p-5 sm:p-7">
+                <div className="flex items-center gap-3">
+                  <span className="text-3xl">📍</span>
 
-              <div className="mt-5 grid gap-4 md:grid-cols-2">
-                <div className="md:col-span-2">
-                  <label htmlFor="address-street" className="text-sm font-bold text-slate-700">
-                    Address *
-                  </label>
-                  <textarea
-                    id="address-street"
-                    value={newAddress.address}
-                    onChange={(event) =>
-                      setNewAddress({
-                        ...newAddress,
-                        address: event.target.value,
-                      })
-                    }
-                    placeholder="House / Flat No., Building, Street"
-                    rows={3}
-                    className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-orange-500"
-                  />
+                  <div>
+                    <h3 className="text-xl font-black">
+                      Add a Happy Place
+                    </h3>
+
+                    <p className="mt-1 text-sm text-[#708476]">
+                      Where should we deliver
+                      your pet's goodies?
+                    </p>
+                  </div>
                 </div>
 
-                <div className="md:col-span-2">
-                  <label htmlFor="address-landmark" className="text-sm font-bold text-slate-700">
-                    Landmark (Optional)
-                  </label>
-                  <input
-                    id="address-landmark"
-                    value={newAddress.landmark}
-                    onChange={(event) =>
-                      setNewAddress({
-                        ...newAddress,
-                        landmark: event.target.value,
-                      })
-                    }
-                    placeholder="Near..."
-                    className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-orange-500"
-                  />
+                <div className="mt-6 grid gap-5 md:grid-cols-2">
+                  <div className="md:col-span-2">
+                    <label
+                      htmlFor="address-street"
+                      className="text-sm font-extrabold"
+                    >
+                      🏠 Full Address *
+                    </label>
+
+                    <textarea
+                      id="address-street"
+                      rows={3}
+                      value={newAddress.address}
+                      onChange={(event) =>
+                        setNewAddress({
+                          ...newAddress,
+                          address: event.target.value,
+                        })
+                      }
+                      placeholder="Flat No., Building, Street"
+                      className={`${inputStyle} resize-none`}
+                    />
+                  </div>
+
+                  <div className="md:col-span-2">
+                    <label
+                      htmlFor="address-landmark"
+                      className="text-sm font-extrabold"
+                    >
+                      📍 Landmark (Optional)
+                    </label>
+
+                    <input
+                      id="address-landmark"
+                      value={newAddress.landmark}
+                      onChange={(event) =>
+                        setNewAddress({
+                          ...newAddress,
+                          landmark: event.target.value,
+                        })
+                      }
+                      placeholder="Near..."
+                      className={inputStyle}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="address-city"
+                      className="text-sm font-extrabold"
+                    >
+                      🏙️ City *
+                    </label>
+
+                    <input
+                      id="address-city"
+                      value={newAddress.city}
+                      onChange={(event) =>
+                        setNewAddress({
+                          ...newAddress,
+                          city: event.target.value,
+                        })
+                      }
+                      placeholder="City"
+                      className={inputStyle}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="address-state"
+                      className="text-sm font-extrabold"
+                    >
+                      🌿 State *
+                    </label>
+
+                    <input
+                      id="address-state"
+                      value={newAddress.state}
+                      onChange={(event) =>
+                        setNewAddress({
+                          ...newAddress,
+                          state: event.target.value,
+                        })
+                      }
+                      placeholder="State"
+                      className={inputStyle}
+                    />
+                  </div>
+
+                  <div>
+                    <label
+                      htmlFor="address-pincode"
+                      className="text-sm font-extrabold"
+                    >
+                      📮 PIN Code *
+                    </label>
+
+                    <input
+                      id="address-pincode"
+                      inputMode="numeric"
+                      maxLength={6}
+                      value={newAddress.pincode}
+                      onChange={(event) =>
+                        setNewAddress({
+                          ...newAddress,
+                          pincode:
+                            event.target.value.replace(
+                              /\D/g,
+                              ""
+                            ),
+                        })
+                      }
+                      placeholder="6-digit PIN code"
+                      className={inputStyle}
+                    />
+                  </div>
                 </div>
 
-                <div>
-                  <label htmlFor="address-city" className="text-sm font-bold text-slate-700">
-                    City *
-                  </label>
-                  <input
-                    id="address-city"
-                    value={newAddress.city}
-                    onChange={(event) =>
-                      setNewAddress({
-                        ...newAddress,
-                        city: event.target.value,
-                      })
-                    }
-                    placeholder="City"
-                    className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-orange-500"
-                  />
-                </div>
+                {addressError && (
+                  <div
+                    role="alert"
+                    className="mt-5 rounded-2xl bg-red-50 p-4 text-sm font-bold text-red-600"
+                  >
+                    {addressError}
+                  </div>
+                )}
 
-                <div>
-                  <label htmlFor="address-state" className="text-sm font-bold text-slate-700">
-                    State *
-                  </label>
-                  <input
-                    id="address-state"
-                    value={newAddress.state}
-                    onChange={(event) =>
-                      setNewAddress({
-                        ...newAddress,
-                        state: event.target.value,
-                      })
-                    }
-                    placeholder="State"
-                    className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-orange-500"
-                  />
-                </div>
-
-                <div>
-                  <label htmlFor="address-pincode" className="text-sm font-bold text-slate-700">
-                    PIN Code *
-                  </label>
-                  <input
-                    id="address-pincode"
-                    value={newAddress.pincode}
-                    maxLength={6}
-                    inputMode="numeric"
-                    onChange={(event) =>
-                      setNewAddress({
-                        ...newAddress,
-                        pincode: event.target.value.replace(/\D/g, ""),
-                      })
-                    }
-                    placeholder="6-digit PIN code"
-                    className="mt-2 w-full rounded-xl border border-gray-300 bg-white px-4 py-3 outline-none focus:border-orange-500"
-                  />
-                </div>
+                <button
+                  type="button"
+                  onClick={addAddress}
+                  disabled={savingAddress}
+                  className="mt-6 rounded-full bg-[#245C46] px-8 py-3.5 font-extrabold text-white transition hover:bg-[#194633] disabled:opacity-50"
+                >
+                  {savingAddress
+                    ? "Saving Address..."
+                    : "🏡 Save Address"}
+                </button>
               </div>
+            )}
 
-              {addressError && (
-                <div role="alert" className="mt-5 rounded-xl bg-red-100 p-4 text-sm font-semibold text-red-600">
-                  {addressError}
+            {addressMessage && (
+              <div
+                role="status"
+                className="mb-6 rounded-2xl bg-[#EAF5E9] p-4 text-sm font-bold text-[#245C46]"
+              >
+                ✓ {addressMessage}
+              </div>
+            )}
+
+            {addresses.length === 0 &&
+              !showAddressForm && (
+                <div className="rounded-[26px] border-2 border-dashed border-[#DCE8DA] bg-[#FFFCF7] px-6 py-12 text-center">
+                  <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-[#FFF0E4] text-6xl">
+                    🏡
+                  </div>
+
+                  <h3 className="mt-6 text-xl font-black">
+                    No addresses added yet!
+                  </h3>
+
+                  <p className="mx-auto mt-3 max-w-sm text-sm leading-7 text-[#708476]">
+                    Save your delivery address
+                    and make checkout easier
+                    whenever you shop for your pet.
+                  </p>
+
+                  <button
+                    type="button"
+                    onClick={() =>
+                      setShowAddressForm(true)
+                    }
+                    className="mt-6 rounded-full bg-[#245C46] px-6 py-3 text-sm font-extrabold text-white"
+                  >
+                    + Add My First Address
+                  </button>
                 </div>
               )}
 
-              <button
-                type="button"
-                onClick={addAddress}
-                disabled={savingAddress}
-                className="mt-5 rounded-xl bg-orange-500 px-6 py-3 font-bold text-white hover:bg-orange-600 disabled:opacity-60"
-              >
-                {savingAddress ? "Saving..." : "Save Address"}
-              </button>
-            </div>
-          )}
-
-          {addressMessage && (
-            <div className="mt-5 rounded-xl bg-green-50 p-4 text-sm font-semibold text-green-700">
-              ✓ {addressMessage}
-            </div>
-          )}
-
-          {addresses.length === 0 && !showAddressForm && (
-            <div className="mt-7 rounded-2xl border-2 border-dashed border-gray-200 px-6 py-10 text-center">
-              <div className="text-4xl">🏠</div>
-              <p className="mt-3 font-bold text-slate-700">
-                No addresses added yet
-              </p>
-              <p className="mt-1 text-sm text-gray-400">
-                Add your delivery address for faster checkout.
-              </p>
-            </div>
-          )}
-
-          {addresses.length > 0 && (
-            <div className="mt-7 grid gap-4">
-              {addresses.map((item) => (
-                <div
-                  key={item.id}
-                  className="rounded-2xl border border-gray-200 p-5"
-                >
-                  <div className="flex flex-wrap items-center gap-2">
-                    <p className="font-bold text-slate-900">
-                      🏠 Delivery Address
-                    </p>
-
-                    {item.isDefault && (
-                      <span className="rounded-full bg-green-100 px-3 py-1 text-xs font-bold text-green-700">
-                        Default
+            {addresses.length > 0 && (
+              <div className="grid gap-4 md:grid-cols-2">
+                {addresses.map((item, index) => (
+                  <div
+                    key={item.id}
+                    className={`rounded-[24px] border p-6 ${
+                      index % 2 === 0
+                        ? "border-[#DCE8DA] bg-[#EAF5E9]"
+                        : "border-[#F3E0D2] bg-[#FFF0E4]"
+                    }`}
+                  >
+                    <div className="flex flex-wrap items-center justify-between gap-3">
+                      <span className="text-4xl">
+                        🏡
                       </span>
-                    )}
-                  </div>
 
-                  <p className="mt-3 text-gray-600">
-                    {item.address}
-                  </p>
+                      {item.isDefault && (
+                        <span className="rounded-full bg-white px-3 py-1.5 text-xs font-extrabold text-[#245C46]">
+                          ✓ Default Address
+                        </span>
+                      )}
+                    </div>
 
-                  {item.landmark && (
-                    <p className="mt-1 text-sm text-gray-500">
-                      Landmark: {item.landmark}
+                    <h3 className="mt-5 text-lg font-black">
+                      Delivery Address
+                    </h3>
+
+                    <p className="mt-3 break-words text-sm leading-7 text-[#536A5D]">
+                      {item.address}
                     </p>
-                  )}
 
-                  <p className="mt-1 text-gray-600">
-                    {item.city}, {item.state} - {item.pincode}
-                  </p>
-                </div>
-              ))}
-            </div>
-          )}
+                    {item.landmark && (
+                      <p className="mt-2 break-words text-sm text-[#708476]">
+                        📍 Near {item.landmark}
+                      </p>
+                    )}
+
+                    <p className="mt-2 text-sm font-semibold text-[#536A5D]">
+                      {item.city}, {item.state} -{" "}
+                      {item.pincode}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* BOTTOM BANNER */}
+        <div className="mt-10 rounded-[30px] bg-[#245C46] p-8 text-center text-white sm:p-10">
+          <div className="text-5xl">🐾</div>
+
+          <h2 className="mt-4 text-2xl font-black">
+            Everything your pet needs, in one place!
+          </h2>
+
+          <p className="mx-auto mt-3 max-w-xl text-sm leading-7 text-[#D7EBDE]">
+            Explore treats, food, pet profiles,
+            Paw Points and more — all made with
+            love for your furry companions.
+          </p>
+
+          <div className="mt-6 flex flex-wrap justify-center gap-3">
+            <Link
+              href="/shop"
+              className="rounded-full bg-white px-7 py-3 text-sm font-extrabold text-[#245C46]"
+            >
+              🛍️ Explore Shop
+            </Link>
+
+            <Link
+              href="/pets"
+              className="rounded-full border border-white/50 px-7 py-3 text-sm font-extrabold text-white"
+            >
+              🐶 My Pets
+            </Link>
+          </div>
         </div>
       </section>
+
+      <footer className="border-t border-[#E6EBE2] bg-[#F3F7EF] py-10">
+        <div className="mx-auto flex max-w-6xl flex-col justify-between gap-4 px-6 sm:flex-row sm:items-center">
+          <div>
+            <h3 className="text-xl font-black text-[#245C46]">
+              🐾 Pet PWA
+            </h3>
+
+            <p className="mt-2 text-sm text-[#718478]">
+              Little paws. Big love. Happy hearts.
+            </p>
+          </div>
+
+          <p className="text-sm text-[#819287]">
+            © 2026 Pet PWA. Made with 💚 for pets.
+          </p>
+        </div>
+      </footer>
     </main>
   );
 }
