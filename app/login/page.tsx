@@ -42,6 +42,9 @@ const loginMessages: Record<string, string> = {
 
   "/profile":
     "👤 Login to manage your profile, save delivery addresses and keep your personal details up to date.",
+
+     "/reminders":
+    "🔔 Login to create pet care reminders, manage feeding schedules, medicines, vaccinations and upcoming appointments.",
 };
 
 function LoginContent() {

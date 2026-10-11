@@ -42,6 +42,10 @@ const signupMessages: Record<string, string> = {
 
   "/profile":
     "👤 Create your Pet PWA account to set up your profile, save delivery addresses and make caring for your pets easier.",
+
+     "/reminders":
+    "🔔 Create your Pet PWA account to set up pet care reminders and stay on top of feeding, medicines, vaccinations and vet visits.",
+    
 };
 
 function SignupContent() {
