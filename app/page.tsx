@@ -58,7 +58,7 @@ const features = [
 ];
 
 export default async function Home() {
-  // Keep your existing authentication logic.
+  // CUSTOMER SESSION
   const cookieStore = await cookies();
 
   const sessionToken =
@@ -86,84 +86,105 @@ export default async function Home() {
         customer = session.customer;
       }
     } catch (error) {
-      console.error(
-        "Home session check error:",
-        error
-      );
+      console.error("Home session error:", error);
     }
   }
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#FFFCF7] text-[#203D34]">
       {/* NAVBAR */}
-      <header className="sticky top-0 z-50 border-b border-[#EEE7DB] bg-white/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-3 px-4 py-3 sm:px-6">
+      <header className="sticky top-0 z-50 w-full border-b border-[#EEE7DB] bg-white/95 backdrop-blur-md">
+        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-2 px-3 py-3 sm:px-6">
+          {/* LOGO */}
           <Link
             href="/"
-            className="flex shrink-0 items-center gap-2"
+            className="flex min-w-0 shrink-0 items-center gap-2"
           >
-            <span className="flex h-11 w-11 items-center justify-center rounded-2xl bg-[#FFF0DC] text-2xl">
+            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFF0DC] text-xl sm:h-11 sm:w-11 sm:text-2xl">
               🐾
             </span>
 
             <div>
-              <h1 className="text-lg font-black">
+              <h1 className="whitespace-nowrap text-sm font-black sm:text-lg">
                 Pet PWA
               </h1>
 
-              <p className="text-[10px] text-[#74877E]">
+              <p className="hidden text-[10px] text-[#74877E] sm:block">
                 Happy pets, happy homes.
               </p>
             </div>
           </Link>
 
-          <nav className="hidden items-center gap-5 text-sm font-semibold text-[#425F52] lg:flex">
+          {/* DESKTOP NAVIGATION */}
+          <nav className="hidden items-center gap-5 text-sm font-semibold text-[#425F52] xl:flex">
             <Link href="/shop" className="hover:text-orange-600">
               Shop
             </Link>
+
             <Link href="/pets" className="hover:text-orange-600">
               My Pets
             </Link>
+
             <Link href="/orders" className="hover:text-orange-600">
               Orders
             </Link>
+
             <Link href="/rewards" className="hover:text-orange-600">
               Rewards
             </Link>
+
             <Link href="/reminders" className="hover:text-orange-600">
               Reminders
             </Link>
+
             <Link href="/support" className="hover:text-orange-600">
               Support
             </Link>
           </nav>
 
-          <div className="flex shrink-0 items-center gap-2">
+          {/* ACCOUNT ACTIONS */}
+          <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
+            {/* CART */}
             <Link
               href="/cart"
-              className="rounded-xl bg-[#EFF6EC] px-3 py-2 text-sm font-bold text-[#24684E]"
+              aria-label="View cart"
+              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EFF6EC] text-base text-[#24684E] sm:h-10 sm:w-auto sm:px-3"
             >
               🛒
-              <span className="hidden sm:inline">
-                {" "}Cart
+
+              <span className="hidden pl-1 text-sm font-bold sm:inline">
+                Cart
               </span>
             </Link>
 
             {customer ? (
               <>
+                {/* MOBILE PROFILE ICON */}
                 <Link
                   href="/profile"
-                  className="max-w-28 truncate rounded-xl bg-[#FFF0DC] px-3 py-2 text-xs font-bold text-[#82522B] sm:max-w-40"
+                  aria-label="My profile"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFF0DC] text-base text-[#82522B] sm:hidden"
+                >
+                  👤
+                </Link>
+
+                {/* DESKTOP CUSTOMER NAME */}
+                <Link
+                  href="/profile"
+                  className="hidden max-w-32 truncate rounded-xl bg-[#FFF0DC] px-3 py-2 text-xs font-bold text-[#82522B] sm:block xl:max-w-40"
                 >
                   👤 {customer.name}
                 </Link>
 
-                <LogoutButton />
+                {/* LOGOUT */}
+                <div className="shrink-0 [&_button]:whitespace-nowrap [&_button]:px-2 [&_button]:py-2 [&_button]:text-xs sm:[&_button]:px-3">
+                  <LogoutButton />
+                </div>
               </>
             ) : (
               <Link
                 href="/login"
-                className="rounded-xl bg-[#24684E] px-4 py-2 text-sm font-bold text-white hover:bg-[#194D3A]"
+                className="shrink-0 whitespace-nowrap rounded-xl bg-[#24684E] px-3 py-2 text-xs font-bold text-white hover:bg-[#194D3A] sm:px-4 sm:text-sm"
               >
                 Login
               </Link>
@@ -171,14 +192,31 @@ export default async function Home() {
           </div>
         </div>
 
-        {/* MOBILE NAV */}
-        <nav className="flex gap-5 overflow-x-auto border-t border-[#F1ECE4] px-4 py-2.5 text-xs font-bold text-[#496257] lg:hidden">
-          <Link href="/shop" className="shrink-0">Shop</Link>
-          <Link href="/pets" className="shrink-0">My Pets</Link>
-          <Link href="/orders" className="shrink-0">Orders</Link>
-          <Link href="/rewards" className="shrink-0">Rewards</Link>
-          <Link href="/reminders" className="shrink-0">Reminders</Link>
-          <Link href="/support" className="shrink-0">Support</Link>
+        {/* MOBILE NAVIGATION */}
+        <nav className="flex w-full items-center gap-5 overflow-x-auto border-t border-[#F1ECE4] px-4 py-3 text-xs font-bold text-[#496257] xl:hidden">
+          <Link href="/shop" className="shrink-0">
+            Shop
+          </Link>
+
+          <Link href="/pets" className="shrink-0">
+            My Pets
+          </Link>
+
+          <Link href="/orders" className="shrink-0">
+            Orders
+          </Link>
+
+          <Link href="/rewards" className="shrink-0">
+            Rewards
+          </Link>
+
+          <Link href="/reminders" className="shrink-0">
+            Reminders
+          </Link>
+
+          <Link href="/support" className="shrink-0">
+            Support
+          </Link>
         </nav>
       </header>
 
@@ -187,6 +225,7 @@ export default async function Home() {
         <div className="pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-[#FFDAA8]/50 blur-3xl" />
 
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-14 sm:px-6 md:grid-cols-2 md:py-20">
+          {/* HERO TEXT */}
           <div className="relative z-10">
             <span className="inline-block rounded-full border border-[#F0D2B3] bg-white/80 px-4 py-2 text-xs font-extrabold uppercase tracking-widest text-[#B75E28]">
               🐾 For every wag & purr
@@ -195,6 +234,7 @@ export default async function Home() {
             <h1 className="mt-6 text-4xl font-black leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">
               Their favourites.
               <br />
+
               <span className="text-[#E16A29]">
                 Delivered with love.
               </span>
@@ -227,6 +267,7 @@ export default async function Home() {
             </p>
           </div>
 
+          {/* HERO IMAGE */}
           <div className="relative mx-auto w-full max-w-lg">
             <div className="overflow-hidden rounded-[2.5rem] border-[7px] border-white bg-[#F5DEC1] shadow-2xl shadow-orange-900/10">
               {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -274,24 +315,27 @@ export default async function Home() {
           </Link>
         </div>
 
-        <div className="mt-9 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+        {/* EQUAL HEIGHT CATEGORY CARDS */}
+        <div className="mt-9 grid grid-cols-2 items-stretch gap-3 sm:gap-5 lg:grid-cols-4">
           {categories.map((category) => (
             <Link
               key={category.name}
               href="/shop"
-              className="group overflow-hidden rounded-3xl border border-[#EEE9DF] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+              className="group flex h-full flex-col overflow-hidden rounded-3xl border border-[#EEE9DF] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
             >
-              <div className="overflow-hidden bg-[#F8F0E5]">
+              {/* FIXED IMAGE HEIGHT */}
+              <div className="h-36 w-full shrink-0 overflow-hidden bg-[#F8F0E5] sm:h-48 lg:h-52">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={category.image}
                   alt={category.name}
                   loading="lazy"
-                  className="h-36 w-full object-cover transition duration-500 group-hover:scale-105 sm:h-48"
+                  className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-105"
                 />
               </div>
 
-              <div className="p-4 sm:p-5">
+              {/* CARD CONTENT */}
+              <div className="flex flex-1 flex-col p-4 sm:p-5">
                 <h3 className="text-base font-black sm:text-lg">
                   {category.name}
                 </h3>
@@ -300,7 +344,7 @@ export default async function Home() {
                   {category.subtitle}
                 </p>
 
-                <span className="mt-4 inline-block text-xs font-extrabold text-[#D36A2D]">
+                <span className="mt-auto inline-block pt-5 text-xs font-extrabold text-[#D36A2D]">
                   Shop Now →
                 </span>
               </div>
@@ -364,6 +408,7 @@ export default async function Home() {
             <h2 className="mt-6 text-3xl font-black leading-tight sm:text-4xl">
               Every pet has a story.
               <br />
+
               <span className="text-[#3C8660]">
                 Give yours an ID.
               </span>
@@ -385,6 +430,7 @@ export default async function Home() {
             </Link>
           </div>
 
+          {/* SAMPLE PET ID CARD */}
           <div className="mx-auto w-full max-w-sm">
             <div className="-rotate-2 rounded-[2rem] bg-white p-6 shadow-xl shadow-green-900/10 transition hover:rotate-0">
               <div className="flex items-start justify-between">
@@ -442,7 +488,7 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* COMPACT ACCOUNT FEATURES */}
+      {/* ACCOUNT FEATURES */}
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6">
         <div className="text-center">
           <p className="text-xs font-black uppercase tracking-widest text-[#D16A2C]">
