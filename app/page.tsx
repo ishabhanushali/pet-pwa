@@ -1,64 +1,71 @@
 
 import Link from "next/link";
 import { cookies } from "next/headers";
-import crypto from "crypto";
+import { createHash } from "crypto";
 
 import LogoutButton from "../components/LogoutButton";
 import { prisma } from "../lib/prisma";
+
+// DIRECT ONLINE IMAGE LINKS
+// No need to download or save photos locally.
 
 const categories = [
   {
     name: "Dog Food",
     subtitle: "Good food, happy tails.",
     image:
-      "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&w=800&q=85",
+      "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&w=900&h=650&q=85",
+    background: "bg-[#FFF0E2]",
   },
   {
     name: "Cat Food",
     subtitle: "Purr-worthy mealtimes.",
     image:
-      "https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=800&q=85",
+      "https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=900&h=650&q=85",
+    background: "bg-[#EAF5E9]",
   },
   {
     name: "Treats",
     subtitle: "Little rewards, big love.",
     image:
-      "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&w=800&q=85",
+      "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&w=900&h=650&q=85",
+    background: "bg-[#FFF4D9]",
   },
   {
     name: "Cat Litter",
     subtitle: "Fresh spaces for curious cats.",
     image:
-      "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=800&q=85",
+      "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=900&h=650&q=85",
+    background: "bg-[#F2EBFF]",
   },
 ];
 
 const features = [
   {
     title: "My Orders",
-    subtitle: "All your orders in one place.",
+    subtitle: "Track your pet essentials in one place.",
     icon: "📦",
     href: "/orders",
-    color: "bg-[#EDF3FF]",
+    background: "bg-[#EDF3FF]",
   },
   {
     title: "Paw Points",
-    subtitle: "Discover rewards for your pets.",
+    subtitle: "Explore rewards for your furry friends.",
     icon: "🎁",
     href: "/rewards",
-    color: "bg-[#FFF2D8]",
+    background: "bg-[#FFF2D8]",
   },
   {
     title: "Pet Reminders",
-    subtitle: "Never miss important pet care.",
+    subtitle: "Keep up with everyday pet care.",
     icon: "🔔",
     href: "/reminders",
-    color: "bg-[#F3EEFF]",
+    background: "bg-[#F3EEFF]",
   },
 ];
 
 export default async function Home() {
-  // CUSTOMER SESSION
+  // CUSTOMER AUTHENTICATION
   const cookieStore = await cookies();
 
   const sessionToken =
@@ -68,8 +75,7 @@ export default async function Home() {
 
   if (sessionToken) {
     try {
-      const tokenHash = crypto
-        .createHash("sha256")
+      const tokenHash = createHash("sha256")
         .update(sessionToken)
         .digest("hex");
 
@@ -83,7 +89,9 @@ export default async function Home() {
         session &&
         session.expiresAt.getTime() > Date.now()
       ) {
-        customer = session.customer;
+        customer = {
+          name: session.customer.name || "My Account",
+        };
       }
     } catch (error) {
       console.error("Home session error:", error);
@@ -92,15 +100,18 @@ export default async function Home() {
 
   return (
     <main className="min-h-screen overflow-x-hidden bg-[#FFFCF7] text-[#203D34]">
-      {/* NAVBAR */}
+
+      {/* ================= NAVBAR ================= */}
+
       <header className="sticky top-0 z-50 w-full border-b border-[#EEE7DB] bg-white/95 backdrop-blur-md">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between gap-2 px-3 py-3 sm:px-6">
+        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-3 sm:px-6">
+
           {/* LOGO */}
           <Link
             href="/"
-            className="flex min-w-0 shrink-0 items-center gap-2"
+            className="flex shrink-0 items-center gap-2"
           >
-            <span className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFF0DC] text-xl sm:h-11 sm:w-11 sm:text-2xl">
+            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FFF0DC] text-xl sm:h-11 sm:w-11 sm:text-2xl">
               🐾
             </span>
 
@@ -142,8 +153,9 @@ export default async function Home() {
             </Link>
           </nav>
 
-          {/* ACCOUNT ACTIONS */}
+          {/* RIGHT SIDE BUTTONS */}
           <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
+
             {/* CART */}
             <Link
               href="/cart"
@@ -151,7 +163,6 @@ export default async function Home() {
               className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EFF6EC] text-base text-[#24684E] sm:h-10 sm:w-auto sm:px-3"
             >
               🛒
-
               <span className="hidden pl-1 text-sm font-bold sm:inline">
                 Cart
               </span>
@@ -159,16 +170,16 @@ export default async function Home() {
 
             {customer ? (
               <>
-                {/* MOBILE PROFILE ICON */}
+                {/* MOBILE PROFILE */}
                 <Link
                   href="/profile"
                   aria-label="My profile"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFF0DC] text-base text-[#82522B] sm:hidden"
+                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFF0DC] text-base sm:hidden"
                 >
                   👤
                 </Link>
 
-                {/* DESKTOP CUSTOMER NAME */}
+                {/* CUSTOMER NAME */}
                 <Link
                   href="/profile"
                   className="hidden max-w-32 truncate rounded-xl bg-[#FFF0DC] px-3 py-2 text-xs font-bold text-[#82522B] sm:block xl:max-w-40"
@@ -220,11 +231,13 @@ export default async function Home() {
         </nav>
       </header>
 
-      {/* HERO SECTION */}
+      {/* ================= HERO ================= */}
+
       <section className="relative overflow-hidden bg-[#FFF1DE]">
         <div className="pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-[#FFDAA8]/50 blur-3xl" />
 
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-14 sm:px-6 md:grid-cols-2 md:py-20">
+
           {/* HERO TEXT */}
           <div className="relative z-10">
             <span className="inline-block rounded-full border border-[#F0D2B3] bg-white/80 px-4 py-2 text-xs font-extrabold uppercase tracking-widest text-[#B75E28]">
@@ -234,16 +247,15 @@ export default async function Home() {
             <h1 className="mt-6 text-4xl font-black leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">
               Their favourites.
               <br />
-
               <span className="text-[#E16A29]">
                 Delivered with love.
               </span>
             </h1>
 
             <p className="mt-6 max-w-lg text-base leading-8 text-[#61756B] sm:text-lg">
-              Food, treats and everyday essentials
-              for the furry family members who make
-              your house a home.
+              Food, treats and everyday essentials for
+              the furry family members who make your
+              house a home.
             </p>
 
             <div className="mt-8 flex flex-wrap gap-3">
@@ -267,14 +279,14 @@ export default async function Home() {
             </p>
           </div>
 
-          {/* HERO IMAGE */}
+          {/* HERO ONLINE IMAGE */}
           <div className="relative mx-auto w-full max-w-lg">
             <div className="overflow-hidden rounded-[2.5rem] border-[7px] border-white bg-[#F5DEC1] shadow-2xl shadow-orange-900/10">
               {/* eslint-disable-next-line @next/next/no-img-element */}
               <img
-                src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=1400&q=85"
-                alt="Happy dogs enjoying time together"
-                className="h-[300px] w-full object-cover sm:h-[390px]"
+                src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=1400&h=1000&q=85"
+                alt="Happy dogs playing together"
+                className="h-[300px] w-full object-cover object-center sm:h-[390px]"
               />
             </div>
 
@@ -289,12 +301,13 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* SHOP BY CATEGORY */}
+      {/* ================= CATEGORIES ================= */}
+
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6">
         <div className="flex flex-wrap items-end justify-between gap-4">
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-[#D16A2C]">
-              The good stuff
+              The Good Stuff
             </p>
 
             <h2 className="mt-2 text-3xl font-black sm:text-4xl">
@@ -302,8 +315,7 @@ export default async function Home() {
             </h2>
 
             <p className="mt-3 text-sm text-[#728278]">
-              All their everyday favourites,
-              easy to find.
+              All their everyday favourites, easy to find.
             </p>
           </div>
 
@@ -321,10 +333,11 @@ export default async function Home() {
             <Link
               key={category.name}
               href="/shop"
-              className="group flex h-full flex-col overflow-hidden rounded-3xl border border-[#EEE9DF] bg-white shadow-sm transition hover:-translate-y-1 hover:shadow-lg"
+              className={`group flex h-full flex-col overflow-hidden rounded-3xl border border-[#EEE9DF] shadow-sm transition hover:-translate-y-1 hover:shadow-lg ${category.background}`}
             >
-              {/* FIXED IMAGE HEIGHT */}
-              <div className="h-36 w-full shrink-0 overflow-hidden bg-[#F8F0E5] sm:h-48 lg:h-52">
+
+              {/* SAME IMAGE SIZE */}
+              <div className="h-36 w-full shrink-0 overflow-hidden sm:h-48 lg:h-52">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={category.image}
@@ -353,10 +366,11 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* PLAYFUL SHOP PROMOTION */}
+      {/* ================= PLAYFUL PROMOTION ================= */}
+
       <section className="bg-[#F1F7EE]">
         <div className="mx-auto grid max-w-7xl items-center gap-8 px-5 py-12 sm:px-6 md:grid-cols-2">
-          <div className="rounded-[2rem] bg-[#E0EEDB] p-5 text-center sm:p-8">
+          <div className="rounded-[2rem] bg-[#E0EEDB] p-6 text-center sm:p-8">
             <div className="text-6xl sm:text-7xl">
               🐶 🦴 🐱
             </div>
@@ -372,7 +386,7 @@ export default async function Home() {
 
           <div>
             <p className="text-xs font-black uppercase tracking-widest text-[#3C8660]">
-              Everyday happiness
+              Everyday Happiness
             </p>
 
             <h2 className="mt-3 text-3xl font-black leading-tight sm:text-4xl">
@@ -383,7 +397,7 @@ export default async function Home() {
             </h2>
 
             <p className="mt-4 max-w-lg leading-7 text-[#647C6E]">
-              Explore pet food, treats and everyday
+              Explore food, treats and everyday
               essentials, all in one convenient shop.
             </p>
 
@@ -397,7 +411,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* DIGITAL PET ID */}
+      {/* ================= DIGITAL PET ID ================= */}
+
       <section className="bg-[#E5F0E3]">
         <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-16 sm:px-6 md:grid-cols-2">
           <div>
@@ -408,7 +423,6 @@ export default async function Home() {
             <h2 className="mt-6 text-3xl font-black leading-tight sm:text-4xl">
               Every pet has a story.
               <br />
-
               <span className="text-[#3C8660]">
                 Give yours an ID.
               </span>
@@ -417,9 +431,8 @@ export default async function Home() {
             <p className="mt-5 max-w-lg leading-8 text-[#5F7769]">
               Create a digital profile for your best
               friend with a unique permanent Pet ID
-              and a scannable QR code.
-              A little identity that makes pet care
-              more connected.
+              and a scannable QR code. A little
+              identity that makes pet care more connected.
             </p>
 
             <Link
@@ -464,9 +477,7 @@ export default async function Home() {
               </div>
 
               <div className="mt-5 flex items-center gap-4 rounded-2xl border border-[#E5ECE6] p-4">
-                <div className="text-5xl">
-                  ▦
-                </div>
+                <div className="text-5xl">▦</div>
 
                 <div>
                   <h4 className="font-black">
@@ -474,8 +485,7 @@ export default async function Home() {
                   </h4>
 
                   <p className="mt-1 text-xs leading-5 text-[#829187]">
-                    Quick access to approved pet
-                    details.
+                    Quick access to approved pet details.
                   </p>
                 </div>
               </div>
@@ -488,7 +498,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ACCOUNT FEATURES */}
+      {/* ================= ACCOUNT FEATURES ================= */}
+
       <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6">
         <div className="text-center">
           <p className="text-xs font-black uppercase tracking-widest text-[#D16A2C]">
@@ -509,7 +520,7 @@ export default async function Home() {
             <Link
               key={feature.title}
               href={feature.href}
-              className={`group rounded-3xl p-6 transition hover:-translate-y-1 hover:shadow-md ${feature.color}`}
+              className={`group rounded-3xl p-6 transition hover:-translate-y-1 hover:shadow-md ${feature.background}`}
             >
               <span className="text-4xl">
                 {feature.icon}
@@ -531,7 +542,8 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* SUPPORT */}
+      {/* ================= SUPPORT ================= */}
+
       <section className="bg-[#FFF0DE]">
         <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 px-5 py-12 sm:px-6 md:flex-row md:items-center">
           <div>
@@ -558,21 +570,18 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* FOOTER */}
+      {/* ================= FOOTER ================= */}
+
       <footer className="bg-[#183C30] text-white">
         <div className="mx-auto grid max-w-7xl gap-9 px-5 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
           <div>
-            <Link
-              href="/"
-              className="text-xl font-black"
-            >
+            <Link href="/" className="text-xl font-black">
               🐾 Pet PWA
             </Link>
 
             <p className="mt-4 max-w-xs text-sm leading-7 text-[#C1D3C8]">
-              Everyday essentials and a little
-              extra love for the pets who make
-              life brighter.
+              Everyday essentials and a little extra
+              love for the pets who make life brighter.
             </p>
           </div>
 
