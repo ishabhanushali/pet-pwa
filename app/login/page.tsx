@@ -1,47 +1,111 @@
+
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { FormEvent, useState } from "react";
+import {
+  useRouter,
+  useSearchParams,
+} from "next/navigation";
+import {
+  FormEvent,
+  Suspense,
+  useState,
+} from "react";
 
-export default function LoginPage() {
+function getSafeNext(value: string | null) {
+  if (
+    !value ||
+    !value.startsWith("/") ||
+    value.startsWith("//") ||
+    value.includes("\\") ||
+    /[\u0000-\u001f]/.test(value)
+  ) {
+    return "/";
+  }
+
+  return value;
+}
+
+// LOGIN MESSAGES FOR DIFFERENT PAGES
+const loginMessages: Record<string, string> = {
+  "/checkout":
+    "🛒 Login to continue to checkout. Your cart items will be waiting for you.",
+
+  "/pets":
+    "🐶 Login to manage your pets, Pet IDs and QR codes.",
+
+  "/orders":
+    "📦 Login to view your orders, track deliveries and reorder your favourite pet essentials.",
+
+  "/rewards":
+    "🐾 Login to explore your Paw Points, track your rewards and enjoy exciting benefits for your furry friends.",
+
+  "/profile":
+    "👤 Login to manage your profile, save delivery addresses and keep your personal details up to date.",
+};
+
+function LoginContent() {
   const router = useRouter();
+  const searchParams = useSearchParams();
+
+  const nextPath = getSafeNext(
+    searchParams.get("next")
+  );
+
+  const signupLink =
+    nextPath === "/"
+      ? "/signup"
+      : `/signup?next=${encodeURIComponent(nextPath)}`;
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [message, setMessage] = useState("");
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
 
-  async function handleLogin(event: FormEvent<HTMLFormElement>) {
+  async function handleLogin(
+    event: FormEvent<HTMLFormElement>
+  ) {
     event.preventDefault();
 
-    setMessage("");
     setLoading(true);
+    setError("");
 
     try {
-      const response = await fetch("/api/auth/login", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          email,
-          password,
-        }),
-      });
+      const response = await fetch(
+        "/api/auth/login",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          credentials: "same-origin",
+          body: JSON.stringify({
+            email: email.trim().toLowerCase(),
+            password,
+          }),
+        }
+      );
 
       const data = await response.json();
 
       if (!response.ok) {
-        setMessage(data.message || "Login failed.");
+        setError(
+          data.message ||
+            data.error ||
+            "Invalid email or password."
+        );
         return;
       }
 
-      router.push("/");
+      // Return to the original page after login
+      router.replace(nextPath);
       router.refresh();
-    } catch (error) {
-      console.error("Login error:", error);
-      setMessage("Something went wrong. Please try again.");
+    } catch (err) {
+      console.error("Login error:", err);
+
+      setError(
+        "Something went wrong. Please try again."
+      );
     } finally {
       setLoading(false);
     }
@@ -49,56 +113,69 @@ export default function LoginPage() {
 
   return (
     <main className="flex min-h-screen flex-col bg-slate-100">
-
       {/* HEADER */}
-      <header className="bg-slate-900 text-white shadow-md">
-        <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-4 sm:px-6">
-          <Link href="/" className="flex items-center gap-3">
-            <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-white text-2xl">
-              🐾
-            </div>
+      <header className="bg-slate-900 text-white">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-6 py-4">
+          <Link
+            href="/"
+            className="flex items-center gap-3"
+          >
+            <span className="text-4xl">🐾</span>
 
             <div>
-              <h1 className="text-xl font-bold sm:text-2xl">
+              <h1 className="text-xl font-bold">
                 Pet PWA
               </h1>
-              <p className="hidden text-xs text-slate-300 sm:block">
-                Pet care made simple
+
+              <p className="text-xs text-slate-300">
+                Shop • Pet ID • Rewards
               </p>
             </div>
           </Link>
 
-          {/* LOGIN PAGE: ONLY SIGN UP BUTTON */}
           <Link
-            href="/signup"
-            className="rounded-lg bg-orange-500 px-5 py-2.5 font-semibold text-white transition hover:bg-orange-600"
+            href={signupLink}
+            className="rounded-xl bg-orange-500 px-6 py-3 font-bold text-white transition hover:bg-orange-600"
           >
             Sign Up
           </Link>
         </div>
       </header>
 
-      {/* BACKGROUND + LOGIN CARD */}
+      {/* LOGIN SECTION */}
       <section
-        className="flex flex-1 items-center justify-center bg-cover bg-center px-4 py-12"
+        className="flex flex-1 items-center justify-center bg-cover bg-center px-5 py-16"
         style={{
           backgroundImage:
-            "linear-gradient(rgba(15,23,42,0.35), rgba(15,23,42,0.35)), url('/images/pet-auth-bg.jpg')",
+            "linear-gradient(rgba(15,23,42,0.40),rgba(15,23,42,0.40)),url('/images/pet-auth-bg.jpg')",
         }}
       >
-        <div className="w-full max-w-md rounded-2xl bg-white p-6 shadow-2xl sm:p-9">
-          <div className="text-center">
-            <div className="text-4xl">🐾</div>
+        <div className="w-full max-w-md rounded-3xl bg-white p-8 shadow-2xl sm:p-10">
 
-            <h2 className="mt-3 text-3xl font-bold text-slate-900">
-              Login
+          {/* TITLE */}
+          <div className="text-center">
+            <div className="text-5xl">🐾</div>
+
+            <h2 className="mt-4 text-3xl font-bold text-slate-900">
+              Welcome Back!
             </h2>
 
-            <p className="mt-2 text-sm text-slate-500">
-              Welcome back to Pet PWA
+            <p className="mt-2 text-gray-500">
+              Login to your Pet PWA account
             </p>
           </div>
 
+          {/* CONTEXT-SPECIFIC LOGIN MESSAGE */}
+          {loginMessages[nextPath] && (
+            <div
+              role="status"
+              className="mt-6 rounded-xl border border-red-200 bg-red-50 px-4 py-4 text-center text-sm font-medium leading-6 text-red-600"
+            >
+              {loginMessages[nextPath]}
+            </div>
+          )}
+
+          {/* LOGIN FORM */}
           <form
             onSubmit={handleLogin}
             className="mt-8 space-y-5"
@@ -106,70 +183,76 @@ export default function LoginPage() {
             {/* EMAIL */}
             <div>
               <label
-                htmlFor="email"
+                htmlFor="login-email"
                 className="mb-2 block font-semibold text-slate-700"
               >
-                Email
+                Email Address
               </label>
 
               <input
-                id="email"
+                id="login-email"
                 type="email"
+                required
+                autoComplete="email"
                 value={email}
                 onChange={(event) =>
                   setEmail(event.target.value)
                 }
-                placeholder="Enter your email..."
-                autoComplete="email"
-                required
-                className="w-full rounded-xl border border-slate-300 px-4 py-4 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                placeholder="Enter your email"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3.5 text-slate-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
             </div>
 
             {/* PASSWORD */}
             <div>
               <label
-                htmlFor="password"
+                htmlFor="login-password"
                 className="mb-2 block font-semibold text-slate-700"
               >
                 Password
               </label>
 
               <input
-                id="password"
+                id="login-password"
                 type="password"
+                required
+                autoComplete="current-password"
                 value={password}
                 onChange={(event) =>
                   setPassword(event.target.value)
                 }
-                placeholder="Enter your password..."
-                autoComplete="current-password"
-                required
-                className="w-full rounded-xl border border-slate-300 px-4 py-4 outline-none transition focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
+                placeholder="Enter your password"
+                className="w-full rounded-xl border border-gray-300 px-4 py-3.5 text-slate-900 outline-none focus:border-orange-500 focus:ring-2 focus:ring-orange-100"
               />
             </div>
 
-            {/* ERROR */}
-            {message && (
-              <div className="rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-600">
-                {message}
+            {/* LOGIN ERROR */}
+            {error && (
+              <div
+                role="alert"
+                className="rounded-xl border border-red-200 bg-red-50 p-3 text-sm text-red-600"
+              >
+                {error}
               </div>
             )}
 
-            {/* LOGIN */}
+            {/* LOGIN BUTTON */}
             <button
               type="submit"
               disabled={loading}
-              className="w-full rounded-xl bg-orange-500 px-5 py-4 font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
+              className="w-full rounded-xl bg-orange-500 py-4 font-bold text-white transition hover:bg-orange-600 disabled:cursor-not-allowed disabled:opacity-60"
             >
-              {loading ? "Logging in..." : "Login"}
+              {loading
+                ? "Logging In..."
+                : "Login"}
             </button>
           </form>
 
-          <p className="mt-7 text-center text-slate-600">
+          {/* SIGN UP LINK */}
+          <p className="mt-7 text-center text-gray-600">
             Don&apos;t have an account?{" "}
             <Link
-              href="/signup"
+              href={signupLink}
               className="font-bold text-orange-600 hover:underline"
             >
               Sign Up
@@ -179,63 +262,65 @@ export default function LoginPage() {
       </section>
 
       {/* FOOTER */}
-      <footer className="bg-slate-900 text-white">
-        <div className="mx-auto grid w-full max-w-7xl gap-8 px-5 py-9 sm:grid-cols-3 sm:px-6">
+      <footer className="bg-slate-950 py-10 text-white">
+        <div className="mx-auto grid max-w-7xl gap-8 px-6 md:grid-cols-3">
 
           <div>
-            <h3 className="text-lg font-bold">
+            <h3 className="text-xl font-bold">
               🐾 Pet PWA
             </h3>
 
-            <p className="mt-3 max-w-sm text-sm leading-6 text-slate-300">
-              Shop pet essentials, manage your pets and keep
-              their digital identity in one place.
+            <p className="mt-3 text-sm text-gray-400">
+              Better care for every pet.
             </p>
           </div>
 
           <div>
-            <h3 className="font-bold">Quick Links</h3>
+            <h3 className="font-bold">
+              Quick Links
+            </h3>
 
-            <div className="mt-3 flex flex-col gap-2 text-sm text-slate-300">
-              <Link href="/" className="hover:text-white">
-                Home
+            <div className="mt-3 flex flex-col gap-2 text-sm text-gray-400">
+              <Link href="/">Home</Link>
+              <Link href="/shop">Shop</Link>
+              <Link href="/pets">My Pets</Link>
+              <Link href="/orders">My Orders</Link>
+              <Link href="/rewards">Paw Points</Link>
+            </div>
+          </div>
+
+          <div>
+            <h3 className="font-bold">
+              Need Help?
+            </h3>
+
+            <div className="mt-3 flex flex-col gap-2 text-sm text-gray-400">
+              <Link href="/support">
+                Customer Support
               </Link>
 
-              <Link href="/shop" className="hover:text-white">
-                Shop
-              </Link>
-
-              <Link href="/pets" className="hover:text-white">
-                My Pets
-              </Link>
-
-              <Link href="/rewards" className="hover:text-white">
+              <Link href="/rewards">
                 Paw Points
               </Link>
             </div>
           </div>
 
-          <div>
-            <h3 className="font-bold">Need Help?</h3>
-
-            <div className="mt-3 flex flex-col gap-2 text-sm text-slate-300">
-              <Link
-                href="/support"
-                className="hover:text-white"
-              >
-                Customer Support
-              </Link>
-
-              <Link
-                href="/orders"
-                className="hover:text-white"
-              >
-                My Orders
-              </Link>
-            </div>
-          </div>
         </div>
       </footer>
     </main>
+  );
+}
+
+export default function LoginPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="flex min-h-screen items-center justify-center">
+          Loading login page...
+        </div>
+      }
+    >
+      <LoginContent />
+    </Suspense>
   );
 }
