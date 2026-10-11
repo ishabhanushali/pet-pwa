@@ -51,3 +51,30 @@ button,
 a {
   -webkit-tap-highlight-color: transparent;
 }
+
+
+/* Floating and gently rotating Pet ID card */
+@keyframes petIdFloat {
+  0% {
+    transform: translateY(0px) rotate(-5deg);
+  }
+
+  50% {
+    transform: translateY(-14px) rotate(3deg);
+  }
+
+  100% {
+    transform: translateY(0px) rotate(-5deg);
+  }
+}
+
+.pet-id-float {
+  animation: petIdFloat 4s ease-in-out infinite;
+  transform-origin: center center;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .pet-id-float {
+    animation: none;
+  }
+}

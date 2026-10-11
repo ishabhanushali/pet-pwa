@@ -3,64 +3,79 @@ import Link from "next/link";
 import { cookies } from "next/headers";
 import { createHash } from "crypto";
 
-import LogoutButton from "../components/LogoutButton";
 import { prisma } from "../lib/prisma";
+import LogoutButton from "../components/LogoutButton";
+import HeroCarousel from "../components/HeroCarousel";
+import CategoryCarousel from "../components/CategoryCarousel";
 
-// DIRECT ONLINE IMAGE LINKS
-// No need to download or save photos locally.
+const navigation = [
+  { name: "Shop", href: "/shop" },
+  { name: "My Pets", href: "/pets" },
+  { name: "Orders", href: "/orders" },
+  { name: "Rewards", href: "/rewards" },
+  { name: "Reminders", href: "/reminders" },
+  { name: "Support", href: "/support" },
+];
 
 const categories = [
   {
     name: "Dog Food",
-    subtitle: "Good food, happy tails.",
+    description: "Good food for happy tails.",
     image:
-      "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&w=900&h=650&q=85",
-    background: "bg-[#FFF0E2]",
+      "https://images.unsplash.com/photo-1589924691995-400dc9ecc119?auto=format&fit=crop&w=1000&q=85",
+    color: "#F8E9D9",
   },
   {
     name: "Cat Food",
-    subtitle: "Purr-worthy mealtimes.",
+    description: "Purr-worthy mealtimes.",
     image:
-      "https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=900&h=650&q=85",
-    background: "bg-[#EAF5E9]",
+      "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=1000&q=85",
+    color: "#E7F0E5",
   },
   {
     name: "Treats",
-    subtitle: "Little rewards, big love.",
+    description: "Little rewards, big love.",
     image:
-      "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&w=900&h=650&q=85",
-    background: "bg-[#FFF4D9]",
+      "https://images.unsplash.com/photo-1601758228041-f3b2795255f1?auto=format&fit=crop&w=1000&q=85",
+    color: "#FFF1DA",
   },
   {
     name: "Cat Litter",
-    subtitle: "Fresh spaces for curious cats.",
+    description: "Fresh spaces for curious cats.",
     image:
-      "https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=900&h=650&q=85",
-    background: "bg-[#F2EBFF]",
+      "https://images.unsplash.com/photo-1573865526739-10659fec78a5?auto=format&fit=crop&w=1000&q=85",
+    color: "#F2EAF9",
   },
 ];
 
-const features = [
+const shortcuts = [
   {
-    title: "My Orders",
-    subtitle: "Track your pet essentials in one place.",
+    name: "My Pets",
+    description: "Digital profiles and Pet IDs",
+    icon: "🐶",
+    href: "/pets",
+    color: "#FDEBDD",
+  },
+  {
+    name: "My Orders",
+    description: "Track your purchases",
     icon: "📦",
     href: "/orders",
-    background: "bg-[#EDF3FF]",
+    color: "#E9F1FD",
   },
   {
-    title: "Paw Points",
-    subtitle: "Explore rewards for your furry friends.",
+    name: "Paw Points",
+    description: "Explore your rewards",
     icon: "🎁",
     href: "/rewards",
-    background: "bg-[#FFF2D8]",
+    color: "#FFF2D9",
   },
   {
-    title: "Pet Reminders",
-    subtitle: "Keep up with everyday pet care.",
+    name: "Reminders",
+    description: "Stay on top of pet care",
     icon: "🔔",
     href: "/reminders",
-    background: "bg-[#F3EEFF]",
+    color: "#F1EAFC",
   },
 ];
 
@@ -71,7 +86,7 @@ export default async function Home() {
   const sessionToken =
     cookieStore.get("customerSession")?.value;
 
-  let customer: { name: string } | null = null;
+  let customer: { name: string | null } | null = null;
 
   if (sessionToken) {
     try {
@@ -90,274 +105,150 @@ export default async function Home() {
         session.expiresAt.getTime() > Date.now()
       ) {
         customer = {
-          name: session.customer.name || "My Account",
+          name: session.customer.name,
         };
       }
     } catch (error) {
-      console.error("Home session error:", error);
+      console.error("Homepage session error:", error);
     }
   }
 
   return (
-    <main className="min-h-screen overflow-x-hidden bg-[#FFFCF7] text-[#203D34]">
+    <main className="min-h-screen overflow-x-hidden bg-[#FFFCF8] text-[#1D4033]">
 
-      {/* ================= NAVBAR ================= */}
+      {/* ANNOUNCEMENT BAR */}
+      <div className="bg-[#173E68] px-4 py-2 text-center text-xs font-semibold text-white sm:text-sm">
+        🐾 Everything your furry friend loves, all in one place!
+      </div>
 
-      <header className="sticky top-0 z-50 w-full border-b border-[#EEE7DB] bg-white/95 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between gap-2 px-3 py-3 sm:px-6">
+      {/* HEADER */}
+      <header className="sticky top-0 z-50 border-b border-[#E9E8E1] bg-white/95 backdrop-blur">
+        <div className="mx-auto flex max-w-7xl flex-wrap items-center justify-between gap-3 px-4 py-3 sm:px-6 lg:flex-nowrap">
 
           {/* LOGO */}
           <Link
             href="/"
-            className="flex shrink-0 items-center gap-2"
+            className="flex shrink-0 items-center gap-2 text-lg font-black sm:text-xl"
           >
-            <span className="flex h-9 w-9 items-center justify-center rounded-xl bg-[#FFF0DC] text-xl sm:h-11 sm:w-11 sm:text-2xl">
+            <span className="rounded-xl bg-[#FFECD7] p-2 text-xl">
               🐾
             </span>
-
-            <div>
-              <h1 className="whitespace-nowrap text-sm font-black sm:text-lg">
-                Pet PWA
-              </h1>
-
-              <p className="hidden text-[10px] text-[#74877E] sm:block">
-                Happy pets, happy homes.
-              </p>
-            </div>
+            Pet PWA
           </Link>
 
-          {/* DESKTOP NAVIGATION */}
-          <nav className="hidden items-center gap-5 text-sm font-semibold text-[#425F52] xl:flex">
-            <Link href="/shop" className="hover:text-orange-600">
-              Shop
-            </Link>
-
-            <Link href="/pets" className="hover:text-orange-600">
-              My Pets
-            </Link>
-
-            <Link href="/orders" className="hover:text-orange-600">
-              Orders
-            </Link>
-
-            <Link href="/rewards" className="hover:text-orange-600">
-              Rewards
-            </Link>
-
-            <Link href="/reminders" className="hover:text-orange-600">
-              Reminders
-            </Link>
-
-            <Link href="/support" className="hover:text-orange-600">
-              Support
-            </Link>
+          {/* NAVIGATION */}
+          <nav className="order-3 flex w-full items-center gap-4 overflow-x-auto whitespace-nowrap py-2 text-xs font-bold sm:gap-5 sm:text-sm lg:order-2 lg:w-auto lg:min-w-0 lg:flex-1 lg:justify-center lg:py-0">
+            {navigation.map((item) => (
+              <Link
+                key={item.name}
+                href={item.href}
+                className="shrink-0 transition-colors hover:text-[#D36F39]"
+              >
+                {item.name}
+              </Link>
+            ))}
           </nav>
 
-          {/* RIGHT SIDE BUTTONS */}
-          <div className="flex min-w-0 items-center justify-end gap-1.5 sm:gap-2">
-
-            {/* CART */}
+          {/* CART AND LOGIN / PROFILE */}
+          <div className="order-2 flex shrink-0 items-center gap-2 text-sm font-bold lg:order-3">
             <Link
               href="/cart"
-              aria-label="View cart"
-              className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#EFF6EC] text-base text-[#24684E] sm:h-10 sm:w-auto sm:px-3"
+              className="rounded-xl bg-[#EAF4EB] px-3 py-2"
             >
               🛒
-              <span className="hidden pl-1 text-sm font-bold sm:inline">
-                Cart
+              <span className="hidden sm:inline">
+                {" "}Cart
               </span>
             </Link>
 
             {customer ? (
               <>
-                {/* MOBILE PROFILE */}
                 <Link
                   href="/profile"
-                  aria-label="My profile"
-                  className="flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-[#FFF0DC] text-base sm:hidden"
+                  className="max-w-32 truncate rounded-xl bg-[#FFF1DD] px-3 py-2"
                 >
                   👤
+                  <span className="hidden sm:inline">
+                    {" "}{customer.name || "Profile"}
+                  </span>
                 </Link>
 
-                {/* CUSTOMER NAME */}
-                <Link
-                  href="/profile"
-                  className="hidden max-w-32 truncate rounded-xl bg-[#FFF0DC] px-3 py-2 text-xs font-bold text-[#82522B] sm:block xl:max-w-40"
-                >
-                  👤 {customer.name}
-                </Link>
-
-                {/* LOGOUT */}
-                <div className="shrink-0 [&_button]:whitespace-nowrap [&_button]:px-2 [&_button]:py-2 [&_button]:text-xs sm:[&_button]:px-3">
+                <div className="[&_button]:px-2 [&_button]:py-2 [&_button]:text-xs">
                   <LogoutButton />
                 </div>
               </>
             ) : (
               <Link
                 href="/login"
-                className="shrink-0 whitespace-nowrap rounded-xl bg-[#24684E] px-3 py-2 text-xs font-bold text-white hover:bg-[#194D3A] sm:px-4 sm:text-sm"
+                className="rounded-xl bg-[#205D43] px-4 py-2 text-white transition hover:bg-[#174934]"
               >
                 Login
               </Link>
             )}
           </div>
         </div>
-
-        {/* MOBILE NAVIGATION */}
-        <nav className="flex w-full items-center gap-5 overflow-x-auto border-t border-[#F1ECE4] px-4 py-3 text-xs font-bold text-[#496257] xl:hidden">
-          <Link href="/shop" className="shrink-0">
-            Shop
-          </Link>
-
-          <Link href="/pets" className="shrink-0">
-            My Pets
-          </Link>
-
-          <Link href="/orders" className="shrink-0">
-            Orders
-          </Link>
-
-          <Link href="/rewards" className="shrink-0">
-            Rewards
-          </Link>
-
-          <Link href="/reminders" className="shrink-0">
-            Reminders
-          </Link>
-
-          <Link href="/support" className="shrink-0">
-            Support
-          </Link>
-        </nav>
       </header>
 
-      {/* ================= HERO ================= */}
+      {/* AUTOMATIC CHANGING HERO BANNER */}
+      <HeroCarousel />
 
-      <section className="relative overflow-hidden bg-[#FFF1DE]">
-        <div className="pointer-events-none absolute -left-20 top-10 h-72 w-72 rounded-full bg-[#FFDAA8]/50 blur-3xl" />
+      {/* MOVING ROUND CATEGORY CAROUSEL */}
+      <CategoryCarousel />
 
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-14 sm:px-6 md:grid-cols-2 md:py-20">
-
-          {/* HERO TEXT */}
-          <div className="relative z-10">
-            <span className="inline-block rounded-full border border-[#F0D2B3] bg-white/80 px-4 py-2 text-xs font-extrabold uppercase tracking-widest text-[#B75E28]">
-              🐾 For every wag & purr
-            </span>
-
-            <h1 className="mt-6 text-4xl font-black leading-[1.12] tracking-tight sm:text-5xl lg:text-6xl">
-              Their favourites.
-              <br />
-              <span className="text-[#E16A29]">
-                Delivered with love.
-              </span>
-            </h1>
-
-            <p className="mt-6 max-w-lg text-base leading-8 text-[#61756B] sm:text-lg">
-              Food, treats and everyday essentials for
-              the furry family members who make your
-              house a home.
-            </p>
-
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Link
-                href="/shop"
-                className="rounded-2xl bg-[#24684E] px-7 py-3.5 text-sm font-extrabold text-white shadow-lg shadow-green-900/10 transition hover:bg-[#194D3A]"
-              >
-                Shop Essentials →
-              </Link>
-
-              <Link
-                href="/pets"
-                className="rounded-2xl border border-[#EBC7A7] bg-white px-7 py-3.5 text-sm font-extrabold text-[#91572D] hover:bg-[#FFF9F0]"
-              >
-                Explore Pet ID
-              </Link>
-            </div>
-
-            <p className="mt-7 text-xs font-semibold text-[#789084]">
-              Good food • Happy tails • Thoughtful care
-            </p>
-          </div>
-
-          {/* HERO ONLINE IMAGE */}
-          <div className="relative mx-auto w-full max-w-lg">
-            <div className="overflow-hidden rounded-[2.5rem] border-[7px] border-white bg-[#F5DEC1] shadow-2xl shadow-orange-900/10">
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img
-                src="https://images.unsplash.com/photo-1548199973-03cce0bbc87b?auto=format&fit=crop&w=1400&h=1000&q=85"
-                alt="Happy dogs playing together"
-                className="h-[300px] w-full object-cover object-center sm:h-[390px]"
-              />
-            </div>
-
-            <div className="absolute -bottom-4 left-2 rounded-2xl bg-white px-4 py-3 text-sm font-black text-[#285F49] shadow-xl">
-              ❤️ Made for pet parents
-            </div>
-
-            <div className="absolute -right-2 top-6 rotate-6 rounded-full bg-[#F9C96C] px-4 py-3 text-sm font-black text-[#684A23] shadow-lg">
-              Pawsome!
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* ================= CATEGORIES ================= */}
-
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6">
-        <div className="flex flex-wrap items-end justify-between gap-4">
+      {/* SHOP BY CATEGORY */}
+      <section className="mx-auto max-w-7xl px-4 pb-16 sm:px-6">
+        <div className="mb-6 flex flex-wrap items-end justify-between gap-3">
           <div>
-            <p className="text-xs font-black uppercase tracking-widest text-[#D16A2C]">
-              The Good Stuff
+            <p className="text-xs font-black uppercase tracking-widest text-[#D36F39]">
+              For Every Wag and Purr
             </p>
 
-            <h2 className="mt-2 text-3xl font-black sm:text-4xl">
-              Shop by Category 🐾
+            <h2 className="mt-2 text-2xl font-black sm:text-4xl">
+              Shop by Category
             </h2>
-
-            <p className="mt-3 text-sm text-[#728278]">
-              All their everyday favourites, easy to find.
-            </p>
           </div>
 
           <Link
             href="/shop"
-            className="text-sm font-extrabold text-[#27694E] hover:underline"
+            className="text-sm font-bold text-[#205D43]"
           >
-            Explore the Shop →
+            Explore Shop →
           </Link>
         </div>
 
         {/* EQUAL HEIGHT CATEGORY CARDS */}
-        <div className="mt-9 grid grid-cols-2 items-stretch gap-3 sm:gap-5 lg:grid-cols-4">
+        <div className="grid grid-cols-2 items-stretch gap-3 sm:gap-5 lg:grid-cols-4">
           {categories.map((category) => (
             <Link
               key={category.name}
               href="/shop"
-              className={`group flex h-full flex-col overflow-hidden rounded-3xl border border-[#EEE9DF] shadow-sm transition hover:-translate-y-1 hover:shadow-lg ${category.background}`}
+              className="group flex h-full flex-col overflow-hidden rounded-3xl border border-[#E9E4DB] shadow-sm transition hover:-translate-y-1 hover:shadow-md"
+              style={{
+                backgroundColor: category.color,
+              }}
             >
-
-              {/* SAME IMAGE SIZE */}
-              <div className="h-36 w-full shrink-0 overflow-hidden sm:h-48 lg:h-52">
+              {/* IMAGE AREA */}
+              <div className="flex h-40 w-full items-center justify-center overflow-hidden bg-[#F3F0EA] sm:h-56 lg:h-60">
                 {/* eslint-disable-next-line @next/next/no-img-element */}
                 <img
                   src={category.image}
                   alt={category.name}
                   loading="lazy"
-                  className="h-full w-full object-cover object-center transition duration-500 group-hover:scale-105"
+                  className="h-full w-full object-contain object-center"
                 />
               </div>
 
-              {/* CARD CONTENT */}
+              {/* TEXT AREA */}
               <div className="flex flex-1 flex-col p-4 sm:p-5">
-                <h3 className="text-base font-black sm:text-lg">
+                <h3 className="text-lg font-black sm:text-xl">
                   {category.name}
                 </h3>
 
-                <p className="mt-2 text-xs leading-5 text-[#78887E]">
-                  {category.subtitle}
+                <p className="mt-2 text-xs leading-5 text-[#617569] sm:text-sm">
+                  {category.description}
                 </p>
 
-                <span className="mt-auto inline-block pt-5 text-xs font-extrabold text-[#D36A2D]">
+                <span className="mt-auto pt-4 text-xs font-black text-[#B95F32]">
                   Shop Now →
                 </span>
               </div>
@@ -366,61 +257,68 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ================= PLAYFUL PROMOTION ================= */}
+      {/* EVERYDAY HAPPINESS PROMOTION */}
+      <section className="bg-[#F1F7EE] py-12 sm:py-16">
+        <div className="mx-auto grid max-w-7xl grid-cols-1 items-stretch gap-6 px-4 sm:px-6 md:grid-cols-2 md:gap-10">
 
-      <section className="bg-[#F1F7EE]">
-        <div className="mx-auto grid max-w-7xl items-center gap-8 px-5 py-12 sm:px-6 md:grid-cols-2">
-          <div className="rounded-[2rem] bg-[#E0EEDB] p-6 text-center sm:p-8">
-            <div className="text-6xl sm:text-7xl">
-              🐶 🦴 🐱
+          {/* LEFT PANEL */}
+          <div className="flex h-full min-h-[240px] flex-col items-center justify-center rounded-[2rem] bg-[#E0EEDB] px-6 py-10 text-center sm:min-h-[280px]">
+            <div className="flex items-center justify-center gap-5 text-5xl sm:text-6xl">
+              <span>🐶</span>
+              <span>🦴</span>
+              <span>🐱</span>
             </div>
 
-            <p className="mt-5 text-sm font-bold text-[#367556]">
-              LITTLE TREATS. BIG SMILES.
+            <p className="mt-6 text-xs font-black uppercase tracking-widest text-[#367556]">
+              Little Treats. Big Smiles.
             </p>
 
-            <h3 className="mt-2 text-2xl font-black">
+            <h3 className="mt-3 text-xl font-black text-[#203D34] sm:text-2xl">
               Something for every furry friend.
             </h3>
           </div>
 
-          <div>
-            <p className="text-xs font-black uppercase tracking-widest text-[#3C8660]">
+          {/* RIGHT PANEL */}
+          <div className="flex h-full flex-col justify-center py-4">
+            <p className="text-xs font-black uppercase tracking-widest text-[#367556]">
               Everyday Happiness
             </p>
 
-            <h2 className="mt-3 text-3xl font-black leading-tight sm:text-4xl">
-              Because they deserve
+            <h2 className="mt-4 text-3xl font-black leading-tight text-[#203D34] sm:text-4xl">
+              Because they deserve{" "}
               <span className="text-[#3C8660]">
-                {" "}a little extra love.
+                a little extra love.
               </span>
             </h2>
 
-            <p className="mt-4 max-w-lg leading-7 text-[#647C6E]">
-              Explore food, treats and everyday
-              essentials, all in one convenient shop.
+            <p className="mt-5 max-w-lg text-sm leading-7 text-[#647C6E] sm:text-base">
+              Explore food, treats and everyday essentials,
+              all in one convenient shop.
             </p>
 
-            <Link
-              href="/shop"
-              className="mt-6 inline-block rounded-2xl bg-[#24684E] px-7 py-3.5 text-sm font-extrabold text-white hover:bg-[#194D3A]"
-            >
-              Discover Products →
-            </Link>
+            <div className="mt-7">
+              <Link
+                href="/shop"
+                className="inline-block rounded-xl bg-[#24684E] px-7 py-3.5 text-sm font-extrabold text-white transition hover:bg-[#194D3A]"
+              >
+                Discover Products →
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* ================= DIGITAL PET ID ================= */}
+      {/* DIGITAL PET ID */}
+      <section className="overflow-hidden bg-[#E7F1E7] py-14 sm:py-20">
+        <div className="mx-auto grid max-w-7xl items-center gap-8 px-4 sm:px-6 md:grid-cols-2 md:gap-12">
 
-      <section className="bg-[#E5F0E3]">
-        <div className="mx-auto grid max-w-7xl items-center gap-10 px-5 py-16 sm:px-6 md:grid-cols-2">
+          {/* LEFT TEXT */}
           <div>
-            <span className="inline-block rounded-full bg-white/80 px-4 py-2 text-xs font-black uppercase tracking-widest text-[#367556]">
+            <p className="text-xs font-black uppercase tracking-widest text-[#317754]">
               More Than a Pet Shop
-            </span>
+            </p>
 
-            <h2 className="mt-6 text-3xl font-black leading-tight sm:text-4xl">
+            <h2 className="mt-3 text-3xl font-black sm:text-4xl">
               Every pet has a story.
               <br />
               <span className="text-[#3C8660]">
@@ -428,31 +326,33 @@ export default async function Home() {
               </span>
             </h2>
 
-            <p className="mt-5 max-w-lg leading-8 text-[#5F7769]">
-              Create a digital profile for your best
-              friend with a unique permanent Pet ID
-              and a scannable QR code. A little
-              identity that makes pet care more connected.
+            <p className="mt-4 max-w-lg leading-7 text-[#60766A]">
+              Create a digital profile for your best friend
+              with a unique permanent Pet ID and a
+              scannable QR code. A little identity
+              that makes pet care more connected.
             </p>
 
             <Link
               href="/pets"
-              className="mt-7 inline-block rounded-2xl bg-[#24684E] px-7 py-3.5 text-sm font-extrabold text-white hover:bg-[#194D3A]"
+              className="mt-6 inline-block rounded-xl bg-[#205D43] px-6 py-3 font-bold text-white"
             >
               Create a Pet Profile →
             </Link>
           </div>
 
-          {/* SAMPLE PET ID CARD */}
-          <div className="mx-auto w-full max-w-sm">
-            <div className="-rotate-2 rounded-[2rem] bg-white p-6 shadow-xl shadow-green-900/10 transition hover:rotate-0">
-              <div className="flex items-start justify-between">
+          {/* FLOATING DIGITAL PET ID CARD */}
+          <div className="flex items-center justify-center px-3 py-10 sm:px-6">
+            <div className="pet-id-float w-full max-w-sm rounded-[2rem] bg-white p-7 shadow-2xl">
+
+              {/* CARD HEADER */}
+              <div className="flex items-start justify-between gap-4">
                 <div>
                   <p className="text-xs font-black uppercase tracking-widest text-[#D16A2C]">
                     Digital Pet ID
                   </p>
 
-                  <h3 className="mt-3 text-2xl font-black">
+                  <h3 className="mt-3 text-2xl font-black text-[#1D4033]">
                     Meet Bruno
                   </h3>
 
@@ -461,36 +361,35 @@ export default async function Home() {
                   </p>
                 </div>
 
-                <div className="flex h-20 w-20 items-center justify-center rounded-full bg-[#FFF1DE] text-5xl">
+                <div className="rounded-full bg-[#FFF1DE] p-4 text-4xl">
                   🐶
                 </div>
               </div>
 
+              {/* PET ID NUMBER */}
               <div className="mt-6 rounded-2xl bg-[#FFF4E5] p-4">
                 <p className="text-xs font-bold text-[#9A7C5C]">
                   Sample Permanent Pet ID
                 </p>
 
-                <p className="mt-2 text-2xl font-black tracking-wider text-[#D16A2C]">
+                <p className="mt-2 text-3xl font-black tracking-wider text-[#D16A2C]">
                   P000127
                 </p>
               </div>
 
-              <div className="mt-5 flex items-center gap-4 rounded-2xl border border-[#E5ECE6] p-4">
-                <div className="text-5xl">▦</div>
+              {/* QR PROFILE */}
+              <div className="mt-5 rounded-2xl border border-[#E5ECE6] p-4">
+                <h4 className="font-black text-[#1D4033]">
+                  ▦ QR-Linked Profile
+                </h4>
 
-                <div>
-                  <h4 className="font-black">
-                    QR-Linked Profile
-                  </h4>
-
-                  <p className="mt-1 text-xs leading-5 text-[#829187]">
-                    Quick access to approved pet details.
-                  </p>
-                </div>
+                <p className="mt-2 text-xs leading-5 text-[#829187]">
+                  Quick access to approved pet details.
+                </p>
               </div>
 
-              <p className="mt-4 text-center text-xs text-[#829187]">
+              {/* FOOTER */}
+              <p className="mt-5 text-center text-xs text-[#829187]">
                 🐾 Every pet is one of a kind.
               </p>
             </div>
@@ -498,43 +397,35 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ================= ACCOUNT FEATURES ================= */}
+      {/* ACCOUNT SHORTCUTS */}
+      <section className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+        <h2 className="text-2xl font-black sm:text-4xl">
+          More for Pet Parents
+        </h2>
 
-      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-6">
-        <div className="text-center">
-          <p className="text-xs font-black uppercase tracking-widest text-[#D16A2C]">
-            Little Extras
-          </p>
-
-          <h2 className="mt-2 text-3xl font-black sm:text-4xl">
-            Care Made a Little Easier
-          </h2>
-
-          <p className="mt-3 text-sm text-[#718278]">
-            Useful tools for your everyday pet-parent life.
-          </p>
-        </div>
-
-        <div className="mt-9 grid gap-4 sm:grid-cols-3">
-          {features.map((feature) => (
+        <div className="mt-7 grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-4">
+          {shortcuts.map((item) => (
             <Link
-              key={feature.title}
-              href={feature.href}
-              className={`group rounded-3xl p-6 transition hover:-translate-y-1 hover:shadow-md ${feature.background}`}
+              href={item.href}
+              key={item.name}
+              className="rounded-3xl p-5 transition hover:-translate-y-1 hover:shadow-md sm:p-6"
+              style={{
+                backgroundColor: item.color,
+              }}
             >
-              <span className="text-4xl">
-                {feature.icon}
-              </span>
+              <div className="text-4xl">
+                {item.icon}
+              </div>
 
-              <h3 className="mt-5 text-xl font-black">
-                {feature.title}
+              <h3 className="mt-4 text-lg font-black">
+                {item.name}
               </h3>
 
-              <p className="mt-2 text-sm leading-6 text-[#718278]">
-                {feature.subtitle}
+              <p className="mt-2 text-xs leading-5 text-[#64786B] sm:text-sm">
+                {item.description}
               </p>
 
-              <p className="mt-5 text-xs font-black text-[#286A4F]">
+              <p className="mt-4 text-xs font-bold text-[#205D43]">
                 Explore →
               </p>
             </Link>
@@ -542,97 +433,49 @@ export default async function Home() {
         </div>
       </section>
 
-      {/* ================= SUPPORT ================= */}
-
-      <section className="bg-[#FFF0DE]">
-        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-6 px-5 py-12 sm:px-6 md:flex-row md:items-center">
+      {/* SUPPORT */}
+      <section className="bg-[#FFF0DC] px-4 py-12">
+        <div className="mx-auto flex max-w-7xl flex-col items-start justify-between gap-5 sm:flex-row sm:items-center">
           <div>
-            <p className="text-xs font-black uppercase tracking-widest text-[#C36A31]">
-              Need a Helping Paw?
-            </p>
-
-            <h2 className="mt-2 text-2xl font-black sm:text-3xl">
-              We&apos;re All Ears! 🐾
+            <h2 className="text-2xl font-black">
+              Need a Helping Paw? 🐾
             </h2>
 
-            <p className="mt-3 max-w-lg leading-7 text-[#6B7E72]">
-              Questions about an order, Pet ID or
-              your account? Find the support you need.
+            <p className="mt-2 text-sm text-[#64786B]">
+              Questions about your order or Pet ID?
+              Find support here.
             </p>
           </div>
 
           <Link
             href="/support"
-            className="rounded-2xl bg-[#24684E] px-7 py-3.5 text-sm font-extrabold text-white hover:bg-[#194D3A]"
+            className="rounded-xl bg-[#205D43] px-6 py-3 text-sm font-bold text-white"
           >
             Contact Support →
           </Link>
         </div>
       </section>
 
-      {/* ================= FOOTER ================= */}
-
-      <footer className="bg-[#183C30] text-white">
-        <div className="mx-auto grid max-w-7xl gap-9 px-5 py-12 sm:grid-cols-2 sm:px-6 lg:grid-cols-4">
+      {/* FOOTER */}
+      <footer className="bg-[#193F30] px-4 py-9 text-white">
+        <div className="mx-auto flex max-w-7xl flex-col justify-between gap-4 sm:flex-row sm:items-center">
           <div>
-            <Link href="/" className="text-xl font-black">
+            <p className="text-xl font-black">
               🐾 Pet PWA
-            </Link>
+            </p>
 
-            <p className="mt-4 max-w-xs text-sm leading-7 text-[#C1D3C8]">
-              Everyday essentials and a little extra
-              love for the pets who make life brighter.
+            <p className="mt-2 text-xs text-[#C9D8CE]">
+              Made with love for happy paws.
             </p>
           </div>
 
-          <div>
-            <h3 className="font-black">
-              Explore
-            </h3>
-
-            <div className="mt-4 flex flex-col gap-3 text-sm text-[#C1D3C8]">
-              <Link href="/shop">Shop</Link>
-              <Link href="/pets">My Pets</Link>
-              <Link href="/cart">Cart</Link>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="font-black">
-              My Account
-            </h3>
-
-            <div className="mt-4 flex flex-col gap-3 text-sm text-[#C1D3C8]">
-              <Link href="/profile">Profile</Link>
-              <Link href="/orders">Orders</Link>
-              <Link href="/rewards">Paw Points</Link>
-              <Link href="/reminders">Reminders</Link>
-            </div>
-          </div>
-
-          <div>
-            <h3 className="font-black">
-              Help
-            </h3>
-
-            <div className="mt-4 flex flex-col gap-3 text-sm text-[#C1D3C8]">
-              <Link href="/support">
-                Customer Support
+          <div className="flex flex-wrap gap-4 text-sm">
+            {navigation.map((item) => (
+              <Link key={item.name} href={item.href}>
+                {item.name}
               </Link>
-
-              {!customer && (
-                <>
-                  <Link href="/login">Login</Link>
-                  <Link href="/signup">Sign Up</Link>
-                </>
-              )}
-            </div>
+            ))}
           </div>
-        </div>
-
-        <div className="border-t border-white/10 px-5 py-5 text-center text-xs text-[#B5C9BD]">
-          © {new Date().getFullYear()} Pet PWA.
-          Made for happy paws.
         </div>
       </footer>
     </main>
