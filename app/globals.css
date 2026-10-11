@@ -1,4 +1,9 @@
+
 @import "tailwindcss";
+
+/* ========================================
+   GLOBAL RESET
+======================================== */
 
 *,
 *::before,
@@ -26,6 +31,10 @@ body {
   font-family: Arial, Helvetica, sans-serif;
 }
 
+/* ========================================
+   RESPONSIVE MEDIA
+======================================== */
+
 img,
 svg,
 video,
@@ -33,6 +42,10 @@ canvas {
   max-width: 100%;
   height: auto;
 }
+
+/* ========================================
+   TEXT AND BUTTONS
+======================================== */
 
 p,
 h1,
@@ -52,29 +65,62 @@ a {
   -webkit-tap-highlight-color: transparent;
 }
 
+/* ========================================
+   FLOATING DIGITAL PET ID ANIMATION
+======================================== */
 
-/* Floating and gently rotating Pet ID card */
 @keyframes petIdFloat {
   0% {
-    transform: translateY(0px) rotate(-5deg);
+    transform: translate3d(0, 0, 0) rotate(-5deg);
+  }
+
+  25% {
+    transform: translate3d(0, -8px, 0) rotate(-1deg);
   }
 
   50% {
-    transform: translateY(-14px) rotate(3deg);
+    transform: translate3d(0, -16px, 0) rotate(3deg);
+  }
+
+  75% {
+    transform: translate3d(0, -8px, 0) rotate(-1deg);
   }
 
   100% {
-    transform: translateY(0px) rotate(-5deg);
+    transform: translate3d(0, 0, 0) rotate(-5deg);
   }
 }
 
 .pet-id-float {
-  animation: petIdFloat 4s ease-in-out infinite;
+  animation-name: petIdFloat;
+  animation-duration: 3.5s;
+  animation-timing-function: ease-in-out;
+  animation-iteration-count: infinite;
+
   transform-origin: center center;
+  will-change: transform;
+  backface-visibility: hidden;
 }
+
+/* ========================================
+   MOBILE ANIMATION
+======================================== */
+
+@media (max-width: 768px) {
+  .pet-id-float {
+    animation-duration: 3s;
+    transform-origin: center center;
+  }
+}
+
+/* ========================================
+   ACCESSIBILITY
+======================================== */
 
 @media (prefers-reduced-motion: reduce) {
   .pet-id-float {
     animation: none;
+    transform: rotate(-3deg);
+    will-change: auto;
   }
 }
